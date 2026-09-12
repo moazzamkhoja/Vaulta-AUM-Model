@@ -14,12 +14,12 @@
   header h1 { font-size:18px; font-weight:700; letter-spacing:.5px; }
   header span { font-size:11px; opacity:.75; }
   .tab-bar { background:var(--navy); padding:0 24px; display:flex; gap:4px; border-top:1px solid rgba(255,255,255,.1); }
-  .tab-btn { padding:8px 18px; font-size:12px; font-weight:600; color:rgba(255,255,255,.55);
+  .tab-btn { padding:8px 16px; font-size:12px; font-weight:600; color:rgba(255,255,255,.55);
              border:none; background:transparent; cursor:pointer; border-bottom:3px solid transparent; letter-spacing:.4px; }
   .tab-btn.active { color:#fff; border-bottom-color:#4fc3f7; }
   .tab-btn:hover { color:rgba(255,255,255,.85); }
   .tab-panel { display:none; } .tab-panel.active { display:block; }
-  .layout { display:grid; grid-template-columns:322px 1fr; min-height:calc(100vh - 84px); }
+  .layout { display:grid; grid-template-columns:308px 1fr; min-height:calc(100vh - 84px); }
   .sidebar { background:#1a3a5c; color:#fff; padding:14px 13px; overflow-y:auto; max-height:calc(100vh - 84px); }
   .sidebar h3 { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:#7fb3d3; margin:16px 0 7px; }
   .sidebar h3:first-child { margin-top:0; }
@@ -29,20 +29,6 @@
   .hint { font-size:9px; color:#7fb3d3; margin-top:2px; line-height:1.4; }
   input[type=range] { width:100%; accent-color:#4fc3f7; height:4px; cursor:pointer; }
   hr.div { border:none; border-top:1px solid rgba(255,255,255,.1); margin:12px 0; }
-  .grid4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:5px; margin-bottom:6px; }
-  .gbox { background:rgba(255,255,255,.08); border-radius:5px; padding:5px 3px; text-align:center; }
-  .gbox .ph { font-size:8px; text-transform:uppercase; color:#7fb3d3; margin-bottom:2px; }
-  .gbox input { width:100%; background:transparent; border:none; border-bottom:1px solid #4fc3f7;
-                color:#fff; font-size:11px; font-weight:700; text-align:center; outline:none; padding:1px 0; }
-  .segbox { background:rgba(255,255,255,.06); border-radius:6px; padding:8px; margin-bottom:7px; }
-  .segbox .segname { font-size:10px; font-weight:700; color:#4fc3f7; margin-bottom:6px; }
-  .segrow { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:10px; color:#c8dff0; }
-  .segrow input { width:74px; background:rgba(255,255,255,.1); border:1px solid #4fc3f7; border-radius:4px;
-                  color:#fff; font-size:10px; font-weight:600; text-align:right; padding:2px 4px; outline:none; }
-  .toggle { display:flex; gap:4px; margin-bottom:8px; }
-  .toggle button { flex:1; padding:5px; font-size:10px; font-weight:600; border:1px solid #4fc3f7;
-                   background:transparent; color:#c8dff0; border-radius:4px; cursor:pointer; }
-  .toggle button.on { background:#4fc3f7; color:#0f2b45; }
   .main { padding:14px; overflow-y:auto; max-height:calc(100vh - 84px); }
   .kpi-row { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin-bottom:10px; }
   .kpi { background:var(--card); border-radius:8px; padding:11px 12px; border-top:3px solid var(--blue); box-shadow:0 1px 4px rgba(0,0,0,.07); }
@@ -94,102 +80,88 @@
   ul.find li.warn { color:var(--red); font-weight:600; }
   .callout { background:#eef5fd; border-left:4px solid var(--blue); padding:11px 14px; border-radius:5px;
              font-size:12px; line-height:1.55; margin-bottom:14px; }
+  .callout.warn { background:#fdf0ef; border-left-color:var(--red); }
+  table.grid input { width:88px; background:#fffdf5; border:1px solid #cfd8e3; border-radius:4px;
+                     color:#1F4E79; font-size:11px; font-weight:600; text-align:right; padding:3px 5px; outline:none; }
+  table.grid input:focus { border-color:#4fc3f7; background:#fff; }
+  table.grid td { padding:4px 6px; }
+  .segname { font-weight:700; color:var(--navy); }
+  .segtag { font-size:9px; color:#888; display:block; font-weight:400; }
 </style>
 </head>
 <body>
 <header>
   <h1>Vaulta — AUM Model</h1>
-  <span>10-year model · post-pivot cost structure · revenue = T-bill NIM + transaction fees + tokenized-investment AUM</span>
+  <span>Consumer money management on-chain · a blockchain broker-dealer riding Dinari's rails</span>
 </header>
 <div class="tab-bar">
   <button class="tab-btn active" data-tab="model">📊 Model</button>
-  <button class="tab-btn" data-tab="pnl">💰 P&amp;L &amp; Cash</button>
+  <button class="tab-btn" data-tab="cust">👥 Customer Profiles</button>
   <button class="tab-btn" data-tab="unit">📐 Unit Economics</button>
-  <button class="tab-btn" data-tab="aum">🔀 AUM Deep Dive</button>
+  <button class="tab-btn" data-tab="pnl">💰 P&amp;L &amp; Cash</button>
+  <button class="tab-btn" data-tab="aum">🔀 AUM Engine</button>
   <button class="tab-btn" data-tab="research">📚 Research</button>
 </div>
 
 <div id="tab-model" class="tab-panel active">
 <div class="layout">
   <div class="sidebar">
-    <h3>① Distribution — Deals Signed per Round</h3>
-    <div class="hint" style="margin-bottom:6px">Local operators (property managers, billers). Seed 1 yr / Ser A 2 yrs / Ser B 3 yrs / Steady 4 yrs.</div>
-    <div class="grid4">
-      <div class="gbox"><div class="ph">Seed</div><input type="number" id="i_loc_seed" value="5" step="1"></div>
-      <div class="gbox"><div class="ph">Ser A</div><input type="number" id="i_loc_serA" value="15" step="1"></div>
-      <div class="gbox"><div class="ph">Ser B</div><input type="number" id="i_loc_serB" value="45" step="1"></div>
-      <div class="gbox"><div class="ph">Steady</div><input type="number" id="i_loc_steady" value="120" step="5"></div>
-    </div>
-    <div class="hint" style="margin:6px 0">Enterprise accounts.</div>
-    <div class="grid4">
-      <div class="gbox"><div class="ph">Seed</div><input type="number" id="i_ent_seed" value="0" step="1"></div>
-      <div class="gbox"><div class="ph">Ser A</div><input type="number" id="i_ent_serA" value="2" step="1"></div>
-      <div class="gbox"><div class="ph">Ser B</div><input type="number" id="i_ent_serB" value="8" step="1"></div>
-      <div class="gbox"><div class="ph">Steady</div><input type="number" id="i_ent_steady" value="20" step="1"></div>
-    </div>
-    <div class="slider-row"><label>Customers / Local Deal <span id="l_loccpm">200</span></label>
-      <input type="range" id="i_loc_cpm" min="20" max="1000" step="10" value="200"></div>
-    <div class="slider-row"><label>Customers / Enterprise Deal <span id="l_entcpm">50,000</span></label>
-      <input type="range" id="i_ent_cpm" min="5000" max="500000" step="5000" value="50000"></div>
-    <div class="slider-row"><label>Adoption of a Signed Base <span id="l_adopt">50%</span></label>
-      <input type="range" id="i_adopt" min="0.05" max="1.0" step="0.05" value="0.50"></div>
-    <div class="slider-row"><label>Merchant Annual Churn <span id="l_mchurn">8%</span></label>
-      <input type="range" id="i_mchurn" min="0" max="0.30" step="0.01" value="0.08"></div>
-
-    <hr class="div"><h3>② T-Bill Sleeve</h3>
+    <h3>① T-Bill Sleeve</h3>
     <div class="slider-row"><label>T-Bill Annual Rate <span id="l_tbill">4.80%</span></label>
       <input type="range" id="i_tbill" min="0.01" max="0.10" step="0.001" value="0.048"></div>
     <div class="slider-row"><label>Vaulta Sleeve (keeps) <span id="l_sleeve">20%</span></label>
-      <div class="hint">Consumer earns <b id="l_effrwd">3.84%</b> effective. Chime pays 3.75% APY and requires $3k/mo direct deposits.</div>
+      <div class="hint">Consumer earns <b id="l_effrwd">3.84%</b>. Chime pays 3.75% APY and requires $3k/mo direct deposits.</div>
       <input type="range" id="i_sleeve" min="0.05" max="0.80" step="0.01" value="0.20"></div>
 
+    <hr class="div"><h3>② Payments</h3>
+    <div class="slider-row"><label>QR / Solana Pay Fee <span id="l_qrf">0.50%</span></label>
+      <div class="hint">Direct settlement — real margin. Card and Apple&nbsp;Pay interchange is a pass-through and is excluded from the P&amp;L entirely.</div>
+      <input type="range" id="i_qrf" min="0" max="0.02" step="0.00025" value="0.005"></div>
+    <div class="slider-row"><label>Share of Spend Through QR <span id="l_qrshare">25%</span></label>
+      <div class="hint">Only spend at merchants accepting Solana Pay earns the fee. The rest runs on card rails and is pass-through. This is an acceptance-coverage assumption, not a customer behaviour one.</div>
+      <input type="range" id="i_qrshare" min="0.01" max="1" step="0.01" value="0.25"></div>
+
     <hr class="div"><h3>③ Vaulta Invest</h3>
-    <div class="slider-row"><label>AUM Fee (annual) <span id="l_aumfee">0.25%</span></label>
+    <div class="slider-row"><label>AUM Fee (gross) <span id="l_aumfee">0.25%</span></label>
       <div class="hint">Betterment Basic and Wealthfront both charge 0.25%.</div>
-      <input type="range" id="i_aumfee" min="0.0005" max="0.0200" step="0.00025" value="0.0025"></div>
+      <input type="range" id="i_aumfee" min="0.0005" max="0.02" step="0.00025" value="0.0025"></div>
+    <div class="slider-row"><label>Dinari Revenue Share <span id="l_dinari">30%</span></label>
+      <div class="hint">Paid to the partner broker-dealer. Vaulta nets <b id="l_netfee">0.175%</b>. Not disclosed publicly — a judgement.</div>
+      <input type="range" id="i_dinari" min="0" max="0.60" step="0.05" value="0.30"></div>
     <div class="slider-row"><label>S&amp;P 500 Annual Return <span id="l_mktret">8.5%</span></label>
-      <div class="hint">Historical nominal total return ~10.4% (since 1957 and last 30 yrs). Forward forecasts lower — Vanguard 3.9–5.9%, BlackRock ~5%. Default sits below history, above forecast.</div>
+      <div class="hint">Historical ~10.4% nominal; forward forecasts 3.9–5.9%.</div>
       <input type="range" id="i_mktret" min="0" max="0.14" step="0.005" value="0.085"></div>
     <div class="slider-row"><label>Redemption / Leakage <span id="l_redeem">8.0%</span></label>
       <input type="range" id="i_redeem" min="0" max="0.30" step="0.01" value="0.08"></div>
     <div class="slider-row"><label>Churned Investors Who Liquidate <span id="l_liq">100%</span></label>
-      <div class="hint">100% is the conservative case — assumes everyone leaving the wallet also closes the brokerage account.</div>
       <input type="range" id="i_liq" min="0" max="1" step="0.05" value="1"></div>
-    <h3>Contribution Basis</h3>
-    <div class="toggle"><button id="b_dollar" class="on">$ / month</button><button id="b_pct">% of balance</button></div>
-    <div class="hint" style="margin-bottom:8px">Acorns reports most customers investing ~$50–60/month.</div>
-    <div id="segboxes"></div>
 
-    <hr class="div"><h3>④ Transaction Fees</h3>
-    <div class="slider-row"><label>Monthly Spend % of Balance <span id="l_spend">20%</span></label>
-      <input type="range" id="i_spend" min="0" max="1" step="0.01" value="0.20"></div>
-    <div class="slider-row"><label>QR Merchant Fee <span id="l_qrf">0.50%</span></label>
-      <input type="range" id="i_qrf" min="0" max="0.03" step="0.0005" value="0.005"></div>
-    <div class="slider-row"><label>Rain Net Interchange <span id="l_rin">0.35%</span></label>
-      <input type="range" id="i_rin" min="0" max="0.02" step="0.0005" value="0.0035"></div>
-
-    <hr class="div"><h3>⑤ Operating Costs (post-pivot structure)</h3>
-    <div class="slider-row"><label>Brand Marketing % of Revenue <span id="l_brand">8%</span></label>
-      <div class="hint">Awareness — in opex but NOT in CAC.</div>
-      <input type="range" id="i_mktgpct" min="0" max="0.30" step="0.01" value="0.08"></div>
-    <div class="slider-row"><label>Activation $ / New Customer <span id="l_act">$25</span></label>
-      <div class="hint">Acquisition — counts in CAC and opex.</div>
-      <input type="range" id="i_activation" min="0" max="150" step="5" value="25"></div>
+    <hr class="div"><h3>④ Cost Structure</h3>
+    <div class="hint" style="margin-bottom:8px">Marketing is CAC × gross adds — there is no separate brand line and no BD deal engine. One alliance hire only.</div>
+    <div class="slider-row"><label>Alliance / Partnerships Heads <span id="l_alliance">1</span></label>
+      <input type="range" id="i_alliance" min="0" max="6" step="1" value="1"></div>
+    <div class="slider-row"><label>Alliance Salary <span id="l_allsal">$140,000</span></label>
+      <input type="range" id="i_all_sal" min="60000" max="300000" step="10000" value="140000"></div>
+    <div class="slider-row"><label>Customers per CS Rep <span id="l_csratio">15,000</span></label>
+      <div class="hint">Tighter than a pure wallet — investment accounts generate more contacts.</div>
+      <input type="range" id="i_csratio" min="2000" max="60000" step="1000" value="15000"></div>
     <div class="slider-row"><label>G&amp;A % of Revenue <span id="l_ga">10%</span></label>
-      <div class="hint">Finance, HR, office, insurance, audit + compliance/AML; $400k/yr floor.</div>
+      <div class="hint">Finance, HR, insurance, audit; $400k floor.</div>
       <input type="range" id="i_gapct" min="0" max="0.30" step="0.01" value="0.10"></div>
-    <div class="slider-row"><label>Local BD — deals/rep/yr <span id="l_locd">8</span></label>
-      <input type="range" id="i_loc_deals" min="1" max="20" step="1" value="8"></div>
-    <div class="slider-row"><label>Local BD Salary <span id="l_locsal">$80,000</span></label>
-      <input type="range" id="i_loc_sal" min="40000" max="160000" step="5000" value="80000"></div>
-    <div class="slider-row"><label>Enterprise BD — deals/rep/yr <span id="l_entd">2</span></label>
-      <input type="range" id="i_ent_deals" min="1" max="10" step="1" value="2"></div>
-    <div class="slider-row"><label>Enterprise BD Salary <span id="l_entsal">$200,000</span></label>
-      <input type="range" id="i_ent_sal" min="100000" max="400000" step="10000" value="200000"></div>
+    <div class="slider-row"><label>Infra $ / customer / month <span id="l_infra">$0.50</span></label>
+      <input type="range" id="i_infra" min="0" max="3" step="0.05" value="0.50"></div>
+    <div class="slider-row"><label>KYC $ / new customer <span id="l_kyc">$2.50</span></label>
+      <div class="hint">International KYC runs higher; lever it up if EM-heavy.</div>
+      <input type="range" id="i_kyc" min="0" max="30" step="0.5" value="2.50"></div>
+    <div class="slider-row"><label>Intl Licensing $ / market / yr <span id="l_intlic">$250,000</span></label>
+      <div class="hint">Reg S / local partner and compliance per live market.</div>
+      <input type="range" id="i_intlic" min="0" max="1000000" step="25000" value="250000"></div>
+    <div class="slider-row"><label>Live International Markets (Yr 10) <span id="l_mkts">6</span></label>
+      <input type="range" id="i_mkts" min="0" max="25" step="1" value="6"></div>
     <div class="slider-row"><label>Benefits Loading <span id="l_ben">25%</span></label>
       <input type="range" id="i_benefits" min="0" max="0.50" step="0.01" value="0.25"></div>
 
-    <hr class="div"><h3>⑥ Valuation</h3>
+    <hr class="div"><h3>⑤ Valuation</h3>
     <div class="slider-row"><label>WACC (DCF) <span id="l_wacc">20%</span></label>
       <input type="range" id="i_wacc" min="0.10" max="0.40" step="0.01" value="0.20"></div>
     <div class="slider-row"><label>LTV Discount Rate <span id="l_ltvwacc">15%</span></label>
@@ -206,8 +178,8 @@
         <div class="kpi-sub">PV EBITDA + PV terminal</div></div>
       <div class="kpi navy"><div class="kpi-label">Risk-Adjusted EV</div><div class="kpi-value" id="k_raev">—</div>
         <div class="kpi-sub">survival × stage discount</div></div>
-      <div class="kpi green"><div class="kpi-label">Discounted LTV</div><div class="kpi-value" id="k_ltv">—</div>
-        <div class="kpi-sub">per consumer, Year 10</div></div>
+      <div class="kpi green"><div class="kpi-label">Blended LTV</div><div class="kpi-value" id="k_ltv">—</div>
+        <div class="kpi-sub" id="k_ltv_sub">per funded customer</div></div>
       <div class="kpi" id="k_ratio_card"><div class="kpi-label">LTV : CAC</div><div class="kpi-value" id="k_ratio">—</div>
         <div class="kpi-sub" id="k_ratio_sub">target ≥ 3.0x</div></div>
       <div class="kpi orange"><div class="kpi-label">EBITDA Positive</div><div class="kpi-value" id="k_be">—</div>
@@ -216,102 +188,109 @@
         <div class="kpi-sub">months</div></div>
     </div>
     <div class="ue-row">
-      <div class="ue"><div class="ue-label">Year 10 Total AUM</div><div class="ue-value" id="u_aum">—</div>
+      <div class="ue"><div class="ue-label">Year 10 Customers</div><div class="ue-value" id="u_cust">—</div>
+        <div class="ue-sub" id="u_cust_sub">—</div></div>
+      <div class="ue"><div class="ue-label">Year 10 AUM</div><div class="ue-value" id="u_aum">—</div>
         <div class="ue-sub" id="u_aum_sub">—</div></div>
-      <div class="ue"><div class="ue-label">Year 10 AUM Fee Revenue</div><div class="ue-value" id="u_fee">—</div>
-        <div class="ue-sub" id="u_fee_sub">—</div></div>
-      <div class="ue"><div class="ue-label">AUM % of Net Revenue</div><div class="ue-value" id="u_share">—</div>
+      <div class="ue"><div class="ue-label">Revenue / Customer / Yr</div><div class="ue-value" id="u_arpu">—</div>
+        <div class="ue-sub" id="u_arpu_sub">—</div></div>
+      <div class="ue"><div class="ue-label">AUM % of Revenue</div><div class="ue-value" id="u_share">—</div>
         <div class="ue-sub" id="u_share_sub">—</div></div>
-      <div class="ue"><div class="ue-label">AUM / Consumer / Month</div><div class="ue-value" id="u_percon">—</div>
-        <div class="ue-sub" id="u_percon_sub">—</div></div>
     </div>
     <div class="charts-row">
       <div class="chart-card"><h4>Revenue &amp; EBITDA by Year ($M)</h4><canvas id="ch_pl"></canvas></div>
-      <div class="chart-card"><h4>Consumer Growth by Phase (000s)</h4><canvas id="ch_cons"></canvas></div>
+      <div class="chart-card"><h4>Customers by Segment (000s)</h4><canvas id="ch_cons"></canvas></div>
     </div>
     <div class="charts-row even">
-      <div class="chart-card"><h4>Net Revenue by Line ($M)</h4><canvas id="ch_mix"></canvas></div>
-      <div class="chart-card"><h4>AUM Contribution per Consumer per Month</h4><canvas id="ch_aumcon"></canvas></div>
+      <div class="chart-card"><h4>Revenue by Line ($M)</h4><canvas id="ch_mix"></canvas></div>
+      <div class="chart-card"><h4>Contribution per Customer per Month</h4><canvas id="ch_con"></canvas></div>
     </div>
     <div class="table-card"><h4>Summary by Year</h4><div class="scroll"><table id="t_summary"></table></div></div>
-    <div class="table-card"><h4>What Drives Value — the sleeve is the dominant lever</h4>
+    <div class="table-card"><h4>What Drives Value — sleeve sensitivity</h4>
       <div class="scroll"><table id="t_sleeve2"></table></div>
-      <p class="note">Every column re-runs the whole 10-year model at that sleeve. The highlighted column is the
-      current setting. Consumer reward falls as Vaulta's share rises — that is the trade being made.</p></div>
+      <p class="note">Each column re-runs the whole 10-year model. Highlighted column is the current setting.</p></div>
   </div>
 </div>
 </div>
 
-<div id="tab-pnl" class="tab-panel"><div class="content">
-  <h2>P&amp;L, Cash &amp; Valuation</h2>
-  <p class="sub">Operating cost structure is taken from the post-pivot Vaulta-Pay-Model (v7). Only the revenue model differs.</p>
-  <div class="callout" id="c_costbasis"></div>
-  <div class="sec"><h3>Profit &amp; Loss ($)</h3><div class="scroll"><table id="t_pnl"></table></div></div>
-  <div class="sec"><h3>Headcount by Function</h3><div class="scroll"><table id="t_heads"></table></div>
-    <p class="note">Compliance / BSA-AML cost sits inside G&amp;A, not payroll; headcount shown here for the org picture.</p></div>
-  <div class="sec"><h3>Funding &amp; Cash</h3><div class="scroll"><table id="t_cash"></table></div>
-    <p class="note">Regulatory capital ($6M GENIUS Act reserve) is a balance-sheet raise and is excluded from the P&amp;L.</p></div>
-  <div class="sec"><h3>Valuation</h3><table id="t_val" style="max-width:620px"></table></div>
+<div id="tab-cust" class="tab-panel"><div class="content">
+  <h2>Customer Profiles</h2>
+  <p class="sub">Four consumer segments. Everything here is editable and drives the whole model — marketing expense is CAC × gross adds, nothing else.</p>
+  <div class="callout" id="c_segnote"></div>
+  <div class="sec"><h3>Segment grid</h3><div class="scroll"><table class="grid" id="t_grid"></table></div>
+    <p class="note">CAC is per <b>funded</b> customer, matching how Chime ($109) and Nubank ($7.40) report it — the signups
+    that never funded are already inside those figures. The funding rate is a diagnostic showing implied spend per signup, not
+    a second multiplier. Seed customers are Year-1 counts; segments that start later use their entry count in the year they
+    switch on.</p></div>
+  <div class="sec"><h3>Growth rate by stage (annual)</h3><div class="scroll"><table class="grid" id="t_growth"></table></div>
+    <p class="note">Stages: Seed = Year 1 · Series A = Years 2–3 · Series B = Years 4–6 · Series C = Years 7–10.
+    A segment with a later start contributes nothing until its entry year.</p></div>
+  <div class="sec"><h3>Funded customers by segment and year</h3><div class="scroll"><table id="t_custyr"></table></div></div>
 </div></div>
 
 <div id="tab-unit" class="tab-panel"><div class="content">
   <h2>Unit Economics</h2>
-  <p class="sub">Per consumer per month. The AUM line grows every year as balances accumulate.</p>
-  <div class="callout" id="c_cac"></div>
-  <div class="sec"><h3>By segment — Year 10</h3><div class="scroll"><table id="t_unit"></table></div></div>
-  <div class="sec"><h3>Blended contribution by year — where AUM shows up</h3><div class="scroll"><table id="t_uebyyear"></table></div></div>
-  <div class="sec"><h3>Sleeve sensitivity — unit economics and enterprise value</h3><table id="t_sleeve"></table>
-    <p class="note">The sleeve sets both sides of the trade: a lower sleeve pays the consumer more and is a stronger
-    acquisition offer, but it is paid out of Vaulta's own margin.</p></div>
+  <p class="sub">Revenue per customer, contribution margin per month, and LTV net of churn and drop-outs.</p>
+  <div class="callout" id="c_ue"></div>
+  <div class="sec"><h3>Per customer per month — Year 10 steady state</h3><div class="scroll"><table id="t_unit"></table></div></div>
+  <div class="sec"><h3>Blended by year — where AUM shows up</h3><div class="scroll"><table id="t_uebyyear"></table></div></div>
+  <div class="sec"><h3>Sleeve sensitivity</h3><table id="t_sleeve"></table></div>
+</div></div>
+
+<div id="tab-pnl" class="tab-panel"><div class="content">
+  <h2>P&amp;L, Cash &amp; Valuation</h2>
+  <p class="sub">Post-pivot cost structure, harmonised for a consumer-only business.</p>
+  <div class="callout" id="c_costbasis"></div>
+  <div class="sec"><h3>Profit &amp; Loss ($)</h3><div class="scroll"><table id="t_pnl"></table></div></div>
+  <div class="sec"><h3>Headcount</h3><div class="scroll"><table id="t_heads"></table></div></div>
+  <div class="sec"><h3>Funding &amp; Cash</h3><div class="scroll"><table id="t_cash"></table></div></div>
+  <div class="sec"><h3>Valuation</h3><table id="t_val" style="max-width:620px"></table></div>
 </div></div>
 
 <div id="tab-aum" class="tab-panel"><div class="content">
-  <h2>AUM Deep Dive</h2>
-  <p class="sub">How the balance accumulates, and what moves it.</p>
+  <h2>AUM Engine</h2>
+  <p class="sub">Quarterly roll-forward per segment.</p>
   <div class="sec"><h3>The engine</h3>
     <div class="formula">Closing AUM = Opening
             + rollover at signup   (gross new investors × rollover amount)
             + contributions        (investors × monthly contribution × 3)
             − redemptions          (opening × redemption rate ÷ 4)
             − churn leakage        (opening × quarterly churn × liquidation share)
-            + market return        (on opening plus half of inflows, net of the AUM fee)</div>
-    <p class="note">Gross new investors = investors this quarter − last quarter's investors surviving churn. Using net adds
-    understates rollovers because it silently nets off the investors who left.</p></div>
+            + market return        (on opening plus half of inflows, net of the AUM fee)</div></div>
   <div class="sec"><h3>Roll-forward by year</h3><div class="scroll"><table id="t_roll"></table></div></div>
-  <div class="sec"><h3>AUM fee vs T-bill sleeve</h3>
-    <div class="formula" id="f_algebra"></div>
-    <div class="scroll"><table id="t_cross"></table></div>
-    <p class="note">The ratio contains no user count, so growth moves both sides equally. Only rollover size, contribution,
-    the fee or the sleeve move it.</p></div>
-  <div class="sec"><h3>Required AUM ÷ balances, by sleeve and fee</h3><table id="t_sens"></table></div>
+  <div class="sec"><h3>AUM fee vs T-bill sleeve</h3><div class="formula" id="f_algebra"></div>
+    <div class="scroll"><table id="t_cross"></table></div></div>
 </div></div>
 
 <div id="tab-research" class="tab-panel"><div class="content">
   <h2>Research &amp; Sources</h2>
-  <p class="sub">Basis for every default. Researched September 2026. No default is set above its sourced range.</p>
+  <p class="sub">Basis for every default. Researched September 2026.</p>
   <div class="sec"><table id="t_research"></table></div>
   <div class="sec"><h3>Findings</h3><ul class="find" id="t_find"></ul></div>
+  <div class="sec"><h3>Cost-structure review — what changed and why</h3><ul class="find" id="t_review"></ul></div>
 </div></div>
 
 <script>
+// ═══════════ SEGMENTS ═══════════
 const SEG=[
- {name:"1 — Underbanked Active",      cac:40.00, bal:900,  churn:0.0325, adopt:0.08, contribD:15,  contribP:0.010, roll:0},
- {name:"2 — Dissatisfied Banked",     cac:57.50, bal:2500, churn:0.0225, adopt:0.25, contribD:50,  contribP:0.020, roll:250},
- {name:"3 — Primary Bank Switcher",   cac:70.00, bal:4250, churn:0.0125, adopt:0.40, contribD:100, contribP:0.025, roll:750},
- {name:"4 — Crypto-Curious Investor", cac:47.50, bal:6000, churn:0.0150, adopt:0.70, contribD:200, contribP:0.035, roll:2000}];
-const MIXY=[
- [0.60,0.475,0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35],
- [0.30,0.375,0.45,0.45,0.45,0.45,0.45,0.45,0.45,0.45],
- [0.00,0.075,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15],
- [0.10,0.075,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05]];
+ {key:'ub', name:"Unsatisfied Banked", tag:"Chime's market — overdraft-weary, fee-hostile",
+  cac:55, seedCust:700, startYear:1, bal:2500, spend:1.20, adopt:0.25, contrib:50, roll:250, churn:0.0225, fund:0.65},
+ {key:'un', name:"Unbanked", tag:"4.2% of US households — education and onboarding barrier",
+  cac:120, seedCust:0, startYear:2, bal:800, spend:2.00, adopt:0.05, contrib:10, roll:0, churn:0.0350, fund:0.40},
+ {key:'ce', name:"Crypto Enthusiast", tag:"Already self-custodying — wants yield plus equities",
+  cac:45, seedCust:300, startYear:1, bal:6000, spend:0.40, adopt:0.70, contrib:200, roll:2000, churn:0.0150, fund:0.80},
+ {key:'in', name:"International (EM)", tag:"Turkey, LatAm, South Asia — dollar and US-equity demand",
+  cac:25, seedCust:0, startYear:2, bal:1800, spend:0.15, adopt:0.60, contrib:75, roll:500, churn:0.0200, fund:0.55}];
+const ENTRY={ub:0, un:500, ce:0, in:1500};      // customers in the year a segment switches on
+const GROWTH={                                   // annual growth by stage
+ ub:[0,2.50,1.20,0.45], un:[0,1.50,1.00,0.40],
+ ce:[0,2.00,0.90,0.30], in:[0,3.00,1.50,0.45]};
+const STAGES=['Seed','Series A','Series B','Series C'];
+const stageOf=y=> y===1?0 : y<=3?1 : y<=6?2 : 3;
 const NY=10, NQ=NY*4;
 const RAMP=[0,0.45,0.70,0.90,1,1,1,1,1,1];
-const RCT=0.15, TKT=45;
-// post-pivot cost constants
-const varInfra=0.50, infraBase=6000*12, infraGrowth=0.15, kycCost=2.50;
-const csRatio=30000, seedBuf=18, serABuf=18, REGCAP=6000000;
-const SAL={eng:150000,cs:57000,lead:112000,legal:135000,cyber:190000};
-const termG=0.04, stageDsc=0.65, HORIZON=60;
+const SAL={eng:150000,cs:57000,lead:112000,legal:135000,cyber:190000,comp:130000};
+const infraBase=6000*12, infraGrowth=0.15, termG=0.04, stageDsc=0.65, HORIZON=60, REGCAP=6000000;
 
 const fM=v=>Math.abs(v)>=1e9?'$'+(v/1e9).toFixed(2)+'B':Math.abs(v)>=1e6?'$'+(v/1e6).toFixed(1)+'M':Math.abs(v)>=1e3?'$'+(v/1e3).toFixed(0)+'K':'$'+v.toFixed(0);
 const fD=v=>(v<0?'-$':'$')+Math.abs(v).toLocaleString(undefined,{maximumFractionDigits:0});
@@ -319,475 +298,486 @@ const fD2=v=>(v<0?'-$':'$')+Math.abs(v).toFixed(2);
 const fP=v=>(v*100).toFixed(1)+'%'; const fP2=v=>(v*100).toFixed(2)+'%';
 const fX=v=>v.toFixed(2)+'x'; const fN=v=>Math.round(v).toLocaleString();
 const $=id=>document.getElementById(id); const val=id=>+$(id).value;
-let CONTRIB_MODE='dollar';
 
-$('segboxes').innerHTML=SEG.map((s,i)=>`
- <div class="segbox"><div class="segname">${s.name}</div>
-  <div class="segrow"><span>Wallet balance</span><input type="number" id="s${i}_bal" value="${s.bal}" step="50"></div>
-  <div class="segrow"><span>AUM adoption %</span><input type="number" id="s${i}_adopt" value="${(s.adopt*100).toFixed(0)}" step="1"></div>
-  <div class="segrow cd"><span>Contribution $/mo</span><input type="number" id="s${i}_contribD" value="${s.contribD}" step="5"></div>
-  <div class="segrow cp" style="display:none"><span>Contribution %/mo</span><input type="number" id="s${i}_contribP" value="${(s.contribP*100).toFixed(1)}" step="0.1"></div>
-  <div class="segrow"><span>Rollover at signup $</span><input type="number" id="s${i}_roll" value="${s.roll}" step="100"></div>
- </div>`).join('');
-const readSegs=()=>SEG.map((s,i)=>({name:s.name,churn:s.churn,cac:s.cac,
-  bal:val(`s${i}_bal`),adopt:val(`s${i}_adopt`)/100,
-  contribD:val(`s${i}_contribD`),contribP:val(`s${i}_contribP`)/100,roll:val(`s${i}_roll`)}));
+// ═══════════ EDITABLE GRIDS ═══════════
+const GCOLS=[
+ ['cac','CAC $ / signup','1'],['seedCust','Seed customers','10'],['startYear','Start year','1'],
+ ['bal','Avg balance $','50'],['spend','Spend % of balance','0.01'],['adopt','AUM adoption %','1'],
+ ['contrib','AUM contribution $/mo','5'],['roll','Rollover at signup $','50'],
+ ['churn','Monthly churn %','0.05'],['fund','Funding rate %','1']];
+const PCT_KEYS=['spend','adopt','churn','fund'];
+function buildGrid(){
+  let h='<thead><tr><th>Segment</th>'+GCOLS.map(c=>`<th>${c[1]}</th>`).join('')+'<th>Entry customers</th></tr></thead><tbody>';
+  SEG.forEach((s,i)=>{
+    h+=`<tr><td><span class="segname">${s.name}</span><span class="segtag">${s.tag}</span></td>`+
+      GCOLS.map(([k,,step])=>{
+        const v=PCT_KEYS.includes(k)?(s[k]*100).toFixed(k==='churn'?2:0):s[k];
+        return `<td><input type="number" id="g_${i}_${k}" value="${v}" step="${step}"></td>`;}).join('')+
+      `<td><input type="number" id="g_${i}_entry" value="${ENTRY[s.key]}" step="50"></td></tr>`;});
+  $('t_grid').innerHTML=h+'</tbody>';
+  let g='<thead><tr><th>Segment</th>'+STAGES.map(s=>`<th>${s}</th>`).join('')+'</tr></thead><tbody>';
+  SEG.forEach((s,i)=>{ g+=`<tr><td><span class="segname">${s.name}</span></td>`+
+    GROWTH[s.key].map((v,j)=>j===0?'<td style="color:#aaa">base year</td>':
+      `<td><input type="number" id="gr_${i}_${j}" value="${(v*100).toFixed(0)}" step="5">%</td>`).join('')+'</tr>';});
+  $('t_growth').innerHTML=g+'</tbody>';
+}
+function readSegs(){
+  return SEG.map((s,i)=>{
+    const o={key:s.key,name:s.name,tag:s.tag};
+    GCOLS.forEach(([k])=>{ const raw=val(`g_${i}_${k}`);
+      o[k]=PCT_KEYS.includes(k)?raw/100:raw; });
+    o.entry=val(`g_${i}_entry`);
+    o.growth=[0,1,2,3].map(j=>j===0?0:val(`gr_${i}_${j}`)/100);
+    return o;});
+}
 
+// ═══════════ MODEL ═══════════
 function model(){
-  const tbill=val('i_tbill'), sleeve=val('i_sleeve'), aumFee=val('i_aumfee');
+  const tbill=val('i_tbill'), sleeve=val('i_sleeve'), qrf=val('i_qrf'), qrShare=val('i_qrshare');
+  const aumFeeGross=val('i_aumfee'), dinari=val('i_dinari');
+  const aumFeeNet=aumFeeGross*(1-dinari);
   const mktRet=val('i_mktret'), redeem=val('i_redeem'), liq=val('i_liq');
-  const SPEND=val('i_spend'), QRF=val('i_qrf'), RIN=val('i_rin'), QRS=0.40;
-  const brandPct=val('i_mktgpct'), activation=val('i_activation'), gaPct=val('i_gapct');
-  const locDeals=val('i_loc_deals'), locSal=val('i_loc_sal');
-  const entDeals=val('i_ent_deals'), entSal=val('i_ent_sal'), benefits=val('i_benefits');
-  const locCPM=val('i_loc_cpm'), entCPM=val('i_ent_cpm'), adoptRate=val('i_adopt'), mChurn=val('i_mchurn');
+  const csRatio=val('i_csratio'), gaPct=val('i_gapct'), infraPC=val('i_infra');
+  const kycCost=val('i_kyc'), benefits=val('i_benefits');
+  const allianceHeads=val('i_alliance'), allSal=val('i_all_sal');
+  const intLic=val('i_intlic'), mktsY10=val('i_mkts');
   const WACC=val('i_wacc'), ltvWacc=val('i_ltvwacc'), exitM=val('i_exitm'), survival=val('i_surv');
   const segs=readSegs();
+  const pv=(y,a,b,c,d)=>[a,b,c,d][stageOf(y)];
 
-  const phases=['Seed','Ser A','Ser A','Ser B','Ser B','Ser B','Steady','Steady','Steady','Steady'];
-  const pv=(y,sv,av,bv,tv)=> y===1?sv : y<=3?av : y<=6?bv : tv;
-  const locDeal=[val('i_loc_seed'),val('i_loc_serA'),val('i_loc_serB'),val('i_loc_steady')];
-  const entDeal=[val('i_ent_seed'),val('i_ent_serA'),val('i_ent_serB'),val('i_ent_steady')];
-  const newLoc=y=> y===1?locDeal[0] : y<=3?locDeal[1]/2 : y<=6?locDeal[2]/3 : locDeal[3]/4;
-  const newEnt=y=> y===1?entDeal[0] : y<=3?entDeal[1]/2 : y<=6?entDeal[2]/3 : entDeal[3]/4;
-  const locM=new Array(NY+1).fill(0), entM=new Array(NY+1).fill(0);
-  for(let y=1;y<=NY;y++){ locM[y]=(y>1?locM[y-1]*(1-mChurn):0)+newLoc(y);
-                          entM[y]=(y>1?entM[y-1]*(1-mChurn):0)+newEnt(y); }
-  const merch=y=>Math.round(locM[y]+entM[y]);
-  const locBD=y=>newLoc(y)>0?Math.ceil(newLoc(y)/locDeals):0;
-  const entBD=y=>newEnt(y)>0?Math.ceil(newEnt(y)/entDeals):0;
-  const cons=new Array(NY+1).fill(0);
-  for(let y=1;y<=NY;y++) cons[y]=Math.round((locM[y]*locCPM+entM[y]*entCPM)*adoptRate);
-  const newCons=y=> y===1?cons[1]:Math.max(0,cons[y]-cons[y-1]);
-  const mixOf=(i,y)=>MIXY[i][Math.min(y,NY)-1];
-  const blended=(y,fn)=>segs.reduce((a,s,i)=>a+fn(s)*mixOf(i,y),0);
-  const wallet=y=>blended(y,s=>s.bal);
+  // ── customers by segment by year ──
+  const cust=segs.map(()=>new Array(NY+1).fill(0));
+  segs.forEach((s,i)=>{ for(let y=1;y<=NY;y++){
+    if(y<s.startYear) { cust[i][y]=0; continue; }
+    if(y===s.startYear) { cust[i][y]= s.startYear===1 ? s.seedCust : s.entry; continue; }
+    cust[i][y]=cust[i][y-1]*(1+s.growth[stageOf(y)]); }});
+  const total=y=>segs.reduce((a,s,i)=>a+cust[i][y],0);
+  const share=(i,y)=>total(y)>0?cust[i][y]/total(y):0;
 
-  // quarterly consumer path for the AUM engine
-  const qCons=[];
-  for(let q=1;q<=NQ;q++){ const y=Math.ceil(q/4), qin=q-(y-1)*4;
-    const base=y===1?Math.max(1,cons[1]*0.25):cons[y-1];
-    qCons[q]= cons[y]<=0?0: base*Math.pow(Math.max(cons[y],1)/Math.max(base,1), qin/4); }
+  const netAdds=(i,y)=> y===1?cust[i][1]:Math.max(0,cust[i][y]-cust[i][y-1]);
+  const churnedY=(i,y)=>{ const base=y===1?cust[i][1]/2:cust[i][y-1];
+    return base*(1-Math.pow(1-segs[i].churn,12)); };
+  const grossAdds=(i,y)=>netAdds(i,y)+churnedY(i,y);
+  // CAC in the grid is per FUNDED customer, matching how Chime ($109) and Nubank ($7.40)
+  // report it — the signups that never funded are already inside those numbers. The funding
+  // rate is therefore a diagnostic (implied spend per signup), not a second multiplier.
+  const effCAC=i=>segs[i].cac;
+  const cacPerSignup=i=>segs[i].cac*segs[i].fund;
 
-  // AUM engine
+  // ── AUM engine ──
+  const qCust=segs.map(()=>[]);
+  segs.forEach((s,i)=>{ for(let q=1;q<=NQ;q++){ const y=Math.ceil(q/4), qin=q-(y-1)*4;
+    const base= y<=s.startYear ? (cust[i][y]||0)*0.25 : cust[i][y-1];
+    qCust[i][q]= cust[i][y]<=0?0: Math.max(base,0.0001)*Math.pow(Math.max(cust[i][y],1)/Math.max(base,1),qin/4); }});
   const segA=segs.map(()=>({users:[],open:[],close:[],avg:[],roll:[],con:[],red:[],leak:[],ret:[]}));
-  const qRet=Math.pow(1+Math.max(-0.99,mktRet-aumFee),0.25)-1;
-  for(let i=0;i<segs.length;i++){
-    const s=segs[i], S=segA[i], qChurn=1-Math.pow(1-s.churn,3);
-    for(let q=1;q<=NQ;q++){
-      const y=Math.ceil(q/4);
-      S.users[q]=qCons[q]*mixOf(i,y)*s.adopt*RAMP[Math.min(y,NY)-1];
-      const surv=q===1?0:S.users[q-1]*(1-qChurn);
-      const grossNew=Math.max(0,S.users[q]-surv);
-      const open=q===1?0:S.close[q-1];
-      const cMo=CONTRIB_MODE==='dollar'?s.contribD:s.bal*s.contribP;
-      S.roll[q]=grossNew*s.roll; S.con[q]=S.users[q]*cMo*3;
-      S.red[q]=-open*redeem/4; S.leak[q]=-open*qChurn*liq;
+  const qRet=Math.pow(1+Math.max(-0.99,mktRet-aumFeeGross),0.25)-1;
+  segs.forEach((s,i)=>{ const S=segA[i], qCh=1-Math.pow(1-s.churn,3);
+    for(let q=1;q<=NQ;q++){ const y=Math.ceil(q/4);
+      S.users[q]=qCust[i][q]*s.adopt*RAMP[Math.min(y,NY)-1];
+      const surv=q===1?0:S.users[q-1]*(1-qCh);
+      const gn=Math.max(0,S.users[q]-surv), open=q===1?0:S.close[q-1];
+      S.roll[q]=gn*s.roll; S.con[q]=S.users[q]*s.contrib*3;
+      S.red[q]=-open*redeem/4; S.leak[q]=-open*qCh*liq;
       S.ret[q]=(open+(S.roll[q]+S.con[q])/2)*qRet;
-      S.open[q]=open;
-      S.close[q]=open+S.roll[q]+S.con[q]+S.red[q]+S.leak[q]+S.ret[q];
-      S.avg[q]=(open+S.close[q])/2;
-    }
-  }
-  const aumYear=y=>{ const qs=[1,2,3,4].map(k=>(y-1)*4+k);
-    const flows=k=>qs.reduce((a,q)=>a+segA.reduce((b,S)=>b+S[k][q],0),0);
-    return { avg:qs.reduce((a,q)=>a+segA.reduce((b,S)=>b+S.avg[q],0),0)/4,
-             close:segA.reduce((b,S)=>b+S.close[y*4],0),
-             users:segA.reduce((b,S)=>b+S.users[y*4],0),
-             open:segA.reduce((b,S)=>b+S.open[(y-1)*4+1],0),
-             roll:flows('roll'),con:flows('con'),red:flows('red'),leak:flows('leak'),ret:flows('ret') }; };
+      S.open[q]=open; S.close[q]=open+S.roll[q]+S.con[q]+S.red[q]+S.leak[q]+S.ret[q];
+      S.avg[q]=(open+S.close[q])/2; }});
+  const aumY=y=>{ const qs=[1,2,3,4].map(k=>(y-1)*4+k), fl=k=>qs.reduce((a,q)=>a+segA.reduce((b,S)=>b+S[k][q],0),0);
+    return {avg:qs.reduce((a,q)=>a+segA.reduce((b,S)=>b+S.avg[q],0),0)/4,
+            close:segA.reduce((b,S)=>b+S.close[y*4],0), users:segA.reduce((b,S)=>b+S.users[y*4],0),
+            open:segA.reduce((b,S)=>b+S.open[(y-1)*4+1],0),
+            roll:fl('roll'),con:fl('con'),red:fl('red'),leak:fl('leak'),ret:fl('ret')};};
 
-  // ── revenue: NET presentation (rewards netted out, per post-pivot model) ──
-  const balAll=y=>cons[y]*wallet(y);
-  const floatGross=y=>balAll(y)*tbill;
-  const rewards=y=>floatGross(y)*(1-sleeve);      // memo
-  const nim=y=>floatGross(y)*sleeve;              // revenue
-  const spendY=y=>balAll(y)*SPEND*12;
-  const qrFee=y=>spendY(y)*QRS*QRF;
-  const cardVol=y=>spendY(y)*(1-QRS);
-  const rainNet=y=>cardVol(y)*RIN-cardVol(y)/TKT*RCT;
-  const aumRev=y=>aumYear(y).avg*aumFee;
-  const totalRev=y=>nim(y)+qrFee(y)+rainNet(y)+aumRev(y);
+  // ── revenue ──
+  const balY=y=>segs.reduce((a,s,i)=>a+cust[i][y]*s.bal,0);
+  const nim=y=>balY(y)*tbill*sleeve;
+  const rewards=y=>balY(y)*tbill*(1-sleeve);
+  const qrRev=y=>segs.reduce((a,s,i)=>a+cust[i][y]*s.bal*s.spend*12*qrShare*qrf,0);
+  const aumRev=y=>aumY(y).avg*aumFeeNet;
+  const aumGross=y=>aumY(y).avg*aumFeeGross;
+  const dinariFee=y=>aumGross(y)-aumRev(y);
+  const totalRev=y=>nim(y)+qrRev(y)+aumRev(y);
 
-  // ── opex: post-pivot structure ──
-  const salesCost=y=>(locBD(y)*locSal+entBD(y)*entSal)*(1+benefits);
-  const brand=y=>totalRev(y)*brandPct;
-  const activationCost=y=>newCons(y)*activation;
+  // ── costs ──
   const engHeads=y=>pv(y,4,8,15,25);
-  const csHeads=y=>Math.max(2,Math.ceil(cons[y]/csRatio));
+  const csHeads=y=>Math.max(2,Math.ceil(total(y)/csRatio));
   const mgmtHeads=y=>pv(y,1,2,3,3);
   const legalHeads=y=>pv(y,0,1,3,4);
   const cyberHeads=y=>pv(y,0.3,0.5,1,1);
-  const compHeads=y=>pv(y,1,1,2,3);
+  const compHeads=y=>pv(y,1,2,4,6);
   const engCost=y=>engHeads(y)*SAL.eng*(1+benefits);
   const csCost=y=>csHeads(y)*SAL.cs*(1+benefits);
-  const otherPay=y=>(legalHeads(y)*SAL.legal+mgmtHeads(y)*SAL.lead+cyberHeads(y)*SAL.cyber)*(1+benefits);
-  const payroll=y=>engCost(y)+csCost(y)+otherPay(y);
-  const heads=y=>engHeads(y)+mgmtHeads(y)+legalHeads(y)+Math.round(cyberHeads(y))+compHeads(y)+csHeads(y)+locBD(y)+entBD(y);
+  const compCost=y=>compHeads(y)*SAL.comp*(1+benefits);
+  const otherPay=y=>(legalHeads(y)*SAL.legal+mgmtHeads(y)*SAL.lead+cyberHeads(y)*SAL.cyber
+                     +allianceHeads*allSal)*(1+benefits);
+  const payroll=y=>engCost(y)+csCost(y)+compCost(y)+otherPay(y);
+  const heads=y=>engHeads(y)+csHeads(y)+mgmtHeads(y)+legalHeads(y)+Math.round(cyberHeads(y))+compHeads(y)+allianceHeads;
+  const marketing=y=>segs.reduce((a,s,i)=>a+grossAdds(i,y)*effCAC(i),0);
+  const kyc=y=>segs.reduce((a,s,i)=>a+grossAdds(i,y)*kycCost,0);
   const infraFix=y=>infraBase*Math.pow(1+infraGrowth,y-1);
-  const infraVar=y=>cons[y]*varInfra*12;
-  const refrl=y=>cons[y]*0.015*5*12;
+  const infraVar=y=>total(y)*infraPC*12;
+  const refrl=y=>total(y)*0.015*5*12;
+  const markets=y=>{ const s=stageOf(y); return s===0?0:Math.max(1,Math.round(mktsY10*[0,0.25,0.6,1][s])); };
+  const intlCost=y=>markets(y)*intLic;
   const gaAmt=y=>Math.max(400000,gaPct*totalRev(y));
   const legalRet=y=>pv(y,5000,10000,18000,18000)*12;
-  const kyc=y=>newCons(y)*kycCost;
-  const opex=y=>payroll(y)+salesCost(y)+brand(y)+activationCost(y)+refrl(y)+infraFix(y)+gaAmt(y)+legalRet(y)+kyc(y);
-  const totalCOGS=y=>infraVar(y);
-  const gp=y=>totalRev(y)-totalCOGS(y);
+  const opex=y=>payroll(y)+marketing(y)+kyc(y)+infraFix(y)+refrl(y)+intlCost(y)+gaAmt(y)+legalRet(y);
+  const gp=y=>totalRev(y)-infraVar(y);
   const ebitda=y=>gp(y)-opex(y);
 
-  // implied CAC from the cost structure
-  const impliedCAC=y=>newCons(y)>0?(salesCost(y)+activationCost(y))/newCons(y):0;
-
-  // unit economics per year
+  // ── unit economics ──
   const mdisc=Math.pow(1+ltvWacc,1/12)-1;
-  const ueYear=y=>{
-    const w=wallet(y), nimMo=w*tbill*sleeve/12, spendMo=w*SPEND;
-    const qr=spendMo*QRS*QRF, rain=spendMo*(1-QRS)*RIN-spendMo*(1-QRS)/TKT*RCT;
-    const aumMo=cons[y]>0?aumRev(y)/cons[y]/12:0;
-    const net=nimMo+qr+rain+aumMo-varInfra;
-    const mc=blended(y,s=>s.churn), d=(1-mc)/(1+mdisc);
-    const ltv=net/(1+mdisc)*(1-Math.pow(d,HORIZON))/(1-d);
-    const cac=impliedCAC(y);
-    return {nimMo,qr,rain,aumMo,net,ltv,cac,ratio:cac>0?ltv/cac:0,
-            payback:net>0?cac/net:Infinity,aumShare:net>0?aumMo/net:0};
-  };
-  const ueSeg=segs.map((s,i)=>{
-    const S=segA[i], perUser=S.users[NQ]>0?S.close[NQ]/S.users[NQ]:0;
-    const nimMo=s.bal*tbill*sleeve/12, spendMo=s.bal*SPEND;
-    const qr=spendMo*QRS*QRF, rain=spendMo*(1-QRS)*RIN-spendMo*(1-QRS)/TKT*RCT;
-    const aumMo=perUser*s.adopt*aumFee/12;
-    const net=nimMo+qr+rain+aumMo-varInfra;
+  const supportPC=()=>SAL.cs*(1+benefits)/csRatio/12;
+  function ueSegY(i,y){
+    const s=segs[i], S=segA[i], q=y*4;
+    const perInv=S.users[q]>0?S.close[q]/S.users[q]:0;
+    const nimMo=s.bal*tbill*sleeve/12;
+    const qrMo=s.bal*s.spend*qrShare*qrf;
+    const aumMo=perInv*s.adopt*aumFeeNet/12;
+    const rev=nimMo+qrMo+aumMo;
+    const sup=supportPC(), inf=infraPC;
+    const net=rev-sup-inf;
     const d=(1-s.churn)/(1+mdisc);
     const ltv=net/(1+mdisc)*(1-Math.pow(d,HORIZON))/(1-d);
-    return {...s,perUser,nimMo,qr,rain,aumMo,net,ltv,ratio:ltv/s.cac,
-            payback:net>0?s.cac/net:Infinity,aumShare:net>0?aumMo/net:0};
-  });
-
-  // funding & cash
-  const eb1=ebitda(1), eb2=ebitda(2);
-  const seedRaise=Math.max(500000,Math.max(0,-eb1)*seedBuf/12*1.2);
-  const serARaise=Math.max(1000000,Math.max(0,-(eb1+eb2))+Math.max(0,-eb2)*serABuf/12);
-  let serBRaise=0; for(let y=3;y<=6;y++) serBRaise+=Math.max(0,-ebitda(y));
-  serBRaise=Math.max(5000000,serBRaise*1.2);
-  const cash=[]; let run=0;
-  for(let y=1;y<=NY;y++){
-    const inflow=(y===1?seedRaise:0)+(y===2?serARaise:0)+(y===4?serBRaise:0);
-    run+=inflow+ebitda(y); cash[y]={inflow,eb:ebitda(y),close:run};
+    const ec=effCAC(i);
+    return {perInv,nimMo,qrMo,aumMo,rev,sup,inf,net,ltv,cac:s.cac,eff:ec,
+            perSignup:cacPerSignup(i),
+            ratio:ec>0?ltv/ec:0,payback:net>0?ec/net:Infinity,
+            aumShare:net>0?aumMo/net:0,life:1/s.churn};
   }
-  let pvSum=0; for(let y=1;y<=NY;y++) pvSum+=ebitda(y)/Math.pow(1+WACC,y);
-  const eb10=ebitda(NY);
-  const tvExit=eb10*exitM, tvGordon=WACC>termG?eb10*(1+termG)/(WACC-termG):0;
+  function blendY(y){
+    const w=i=>share(i,y);
+    const agg=k=>segs.reduce((a,s,i)=>a+ueSegY(i,y)[k]*w(i),0);
+    const cac=segs.reduce((a,s,i)=>a+effCAC(i)*w(i),0);
+    const ltv=agg('ltv'), net=agg('net');
+    return {nimMo:agg('nimMo'),qrMo:agg('qrMo'),aumMo:agg('aumMo'),rev:agg('rev'),
+            sup:agg('sup'),inf:agg('inf'),net,ltv,cac,ratio:cac>0?ltv/cac:0,
+            payback:net>0?cac/net:Infinity,aumShare:net>0?agg('aumMo')/net:0};
+  }
+
+  // ── funding & valuation ──
+  const eb=[]; for(let y=1;y<=NY;y++) eb[y]=ebitda(y);
+  const seedRaise=Math.max(500000,Math.max(0,-eb[1])*1.8);
+  let aNeed=0; for(let y=2;y<=3;y++) aNeed+=Math.max(0,-eb[y]);
+  const serARaise=Math.max(1000000,aNeed*1.3);
+  let bNeed=0; for(let y=4;y<=6;y++) bNeed+=Math.max(0,-eb[y]);
+  const serBRaise=Math.max(0,bNeed*1.25);
+  let cNeed=0; for(let y=7;y<=NY;y++) cNeed+=Math.max(0,-eb[y]);
+  const serCRaise=Math.max(0,cNeed*1.2);
+  const cash=[]; let run=0;
+  for(let y=1;y<=NY;y++){ const inf=(y===1?seedRaise:0)+(y===2?serARaise:0)+(y===4?serBRaise:0)+(y===7?serCRaise:0);
+    run+=inf+eb[y]; cash[y]={inflow:inf,eb:eb[y],close:run}; }
+  let pvSum=0; for(let y=1;y<=NY;y++) pvSum+=eb[y]/Math.pow(1+WACC,y);
+  const eb10=eb[NY], tvExit=eb10*exitM, tvGordon=WACC>termG?eb10*(1+termG)/(WACC-termG):0;
   const pvTV=(tvExit+tvGordon)/2/Math.pow(1+WACC,NY);
   const EV=pvSum+pvTV, raEV=EV*survival*stageDsc;
-  let beYear=null; for(let y=1;y<=NY;y++) if(ebitda(y)>0){beYear=y;break;}
+  let beYear=null; for(let y=1;y<=NY;y++) if(eb[y]>0){beYear=y;break;}
 
-  const years=[]; for(let y=1;y<=NY;y++){
-    years.push({y,phase:phases[y-1],cons:cons[y],merch:merch(y),wallet:wallet(y),
-      floatGross:floatGross(y),rewards:rewards(y),nim:nim(y),qr:qrFee(y),rainNet:rainNet(y),
-      aum:aumRev(y),totalRev:totalRev(y),cogs:totalCOGS(y),gp:gp(y),opex:opex(y),
-      payroll:payroll(y),engCost:engCost(y),csCost:csCost(y),otherPay:otherPay(y),
-      salesCost:salesCost(y),brand:brand(y),activationCost:activationCost(y),
-      refrl:refrl(y),infraFix:infraFix(y),infraVar:infraVar(y),ga:gaAmt(y),
-      legalRet:legalRet(y),kyc:kyc(y),ebitda:ebitda(y),newCons:newCons(y),
-      heads:heads(y),engHeads:engHeads(y),csHeads:csHeads(y),mgmtHeads:mgmtHeads(y),
-      legalHeads:legalHeads(y),cyberHeads:cyberHeads(y),compHeads:compHeads(y),
-      locBD:locBD(y),entBD:entBD(y),impliedCAC:impliedCAC(y),
-      A:aumYear(y),ue:ueYear(y),totalBal:balAll(y),cash:cash[y]});
-  }
-  return {years,ueSeg,EV,raEV,beYear,pvSum,pvTV,eb10,seedRaise,serARaise,serBRaise,
-          required:(tbill*sleeve)/aumFee,tbill,sleeve,aumFee,phases,segs};
+  const years=[]; for(let y=1;y<=NY;y++) years.push({
+    y,stage:STAGES[stageOf(y)],cust:total(y),bySeg:segs.map((s,i)=>cust[i][y]),
+    bal:balY(y),nim:nim(y),rewards:rewards(y),qr:qrRev(y),aum:aumRev(y),
+    aumGross:aumGross(y),dinari:dinariFee(y),totalRev:totalRev(y),
+    infraVar:infraVar(y),gp:gp(y),opex:opex(y),payroll:payroll(y),
+    engCost:engCost(y),csCost:csCost(y),compCost:compCost(y),otherPay:otherPay(y),
+    marketing:marketing(y),kyc:kyc(y),infraFix:infraFix(y),refrl:refrl(y),
+    intlCost:intlCost(y),markets:markets(y),ga:gaAmt(y),legalRet:legalRet(y),
+    ebitda:eb[y],heads:heads(y),engHeads:engHeads(y),csHeads:csHeads(y),
+    mgmtHeads:mgmtHeads(y),legalHeads:legalHeads(y),cyberHeads:cyberHeads(y),
+    compHeads:compHeads(y),A:aumY(y),ue:blendY(y),cash:cash[y],
+    grossAdds:segs.reduce((a,s,i)=>a+grossAdds(i,y),0)});
+  return {years,segs,ueSegY,blendY,effCAC,EV,raEV,beYear,pvSum,pvTV,eb10,
+          seedRaise,serARaise,serBRaise,serCRaise,tbill,sleeve,aumFeeNet,aumFeeGross,
+          dinariShare:dinari,required:(tbill*sleeve)/aumFeeNet,share,cust};
 }
 
-let chPL=null,chCons=null,chMix=null,chAumCon=null;
+// ═══════════ RENDER ═══════════
+let chPL=null,chCons=null,chMix=null,chCon=null;
 function render(){
   const L={l_tbill:fP2(val('i_tbill')),l_sleeve:fP(val('i_sleeve')),
-    l_effrwd:fP2(val('i_tbill')*(1-val('i_sleeve'))),l_aumfee:fP2(val('i_aumfee')),
-    l_mktret:fP(val('i_mktret')),l_redeem:fP(val('i_redeem')),l_liq:fP(val('i_liq')),
-    l_spend:fP(val('i_spend')),l_qrf:fP2(val('i_qrf')),l_rin:fP2(val('i_rin')),
-    l_brand:fP(val('i_mktgpct')),l_act:'$'+val('i_activation'),l_ga:fP(val('i_gapct')),
-    l_locd:val('i_loc_deals'),l_locsal:fD(val('i_loc_sal')),l_entd:val('i_ent_deals'),
-    l_entsal:fD(val('i_ent_sal')),l_ben:fP(val('i_benefits')),l_wacc:fP(val('i_wacc')),
-    l_ltvwacc:fP(val('i_ltvwacc')),l_exitm:val('i_exitm')+'x',l_surv:fP(val('i_surv')),
-    l_loccpm:fN(val('i_loc_cpm')),l_entcpm:fN(val('i_ent_cpm')),l_adopt:fP(val('i_adopt')),
-    l_mchurn:fP(val('i_mchurn'))};
+   l_effrwd:fP2(val('i_tbill')*(1-val('i_sleeve'))),l_qrf:fP2(val('i_qrf')),
+   l_qrshare:fP(val('i_qrshare')),
+   l_aumfee:fP2(val('i_aumfee')),l_dinari:fP(val('i_dinari')),
+   l_netfee:fP2(val('i_aumfee')*(1-val('i_dinari'))),l_mktret:fP(val('i_mktret')),
+   l_redeem:fP(val('i_redeem')),l_liq:fP(val('i_liq')),l_alliance:val('i_alliance'),
+   l_allsal:fD(val('i_all_sal')),l_csratio:fN(val('i_csratio')),l_ga:fP(val('i_gapct')),
+   l_infra:fD2(val('i_infra')),l_kyc:fD2(val('i_kyc')),l_intlic:fD(val('i_intlic')),
+   l_mkts:val('i_mkts'),l_ben:fP(val('i_benefits')),l_wacc:fP(val('i_wacc')),
+   l_ltvwacc:fP(val('i_ltvwacc')),l_exitm:val('i_exitm')+'x',l_surv:fP(val('i_surv'))};
   for(const k in L) if($(k)) $(k).textContent=L[k];
 
-  const m=model(), Y=m.years, y10=Y[NY-1], ue10=y10.ue;
+  const m=model(), Y=m.years, y10=Y[NY-1], u=y10.ue;
   $('k_ev').textContent=fM(m.EV); $('k_raev').textContent=fM(m.raEV);
-  $('k_ltv').textContent=fD(ue10.ltv);
-  $('k_ratio').textContent=fX(ue10.ratio);
-  $('k_ratio_sub').textContent='CAC '+fD2(ue10.cac)+' (from cost structure)';
-  $('k_ratio_card').className='kpi '+(ue10.ratio>=3?'green':ue10.ratio>=2?'orange':'red');
+  $('k_ltv').textContent=fD(u.ltv);
+  $('k_ltv_sub').textContent='blended, Year 10';
+  $('k_ratio').textContent=fX(u.ratio);
+  $('k_ratio_sub').textContent='effective CAC '+fD2(u.cac);
+  $('k_ratio_card').className='kpi '+(u.ratio>=3?'green':u.ratio>=2?'orange':'red');
   $('k_be').textContent=m.beYear?'Year '+m.beYear:'Not reached';
-  $('k_be_sub').textContent=m.beYear?m.phases[m.beYear-1]+' phase':'within 10 years';
-  $('k_pay').textContent=isFinite(ue10.payback)?ue10.payback.toFixed(1)+' mo':'n/a';
-
+  $('k_be_sub').textContent=m.beYear?Y[m.beYear-1].stage:'within 10 years';
+  $('k_pay').textContent=isFinite(u.payback)?u.payback.toFixed(1)+' mo':'n/a';
+  $('u_cust').textContent=fN(y10.cust);
+  $('u_cust_sub').textContent=fM(y10.bal)+' balances';
   $('u_aum').textContent=fM(y10.A.close);
   $('u_aum_sub').textContent=fN(y10.A.users)+' investors · '+fD(y10.A.users?y10.A.close/y10.A.users:0)+' each';
-  $('u_fee').textContent=fM(y10.aum);
-  $('u_fee_sub').textContent='vs '+fM(Y[4].aum)+' in Year 5';
+  $('u_arpu').textContent=fD(y10.cust?y10.totalRev/y10.cust:0);
+  $('u_arpu_sub').textContent='net revenue per customer';
   $('u_share').textContent=fP(y10.totalRev>0?y10.aum/y10.totalRev:0);
-  $('u_share_sub').textContent='vs '+fP(Y[2].totalRev>0?Y[2].aum/Y[2].totalRev:0)+' in Year 3';
-  $('u_percon').textContent=fD2(ue10.aumMo);
-  $('u_percon_sub').textContent=fP(ue10.aumShare)+' of net contribution';
+  $('u_share_sub').textContent='vs '+fP(Y[4].totalRev>0?Y[4].aum/Y[4].totalRev:0)+' in Year 5';
 
   const labels=Y.map(y=>2026+y.y);
-  const mk=(ref,cfg)=>new Chart(ref,cfg);
   if(chPL)chPL.destroy();
-  chPL=mk($('ch_pl'),{type:'bar',data:{labels,datasets:[
-    {label:'Net revenue',data:Y.map(y=>+(y.totalRev/1e6).toFixed(2)),backgroundColor:'rgba(46,117,182,.75)',order:2},
-    {label:'EBITDA',data:Y.map(y=>+(y.ebitda/1e6).toFixed(2)),
-     backgroundColor:Y.map(y=>y.ebitda>=0?'rgba(112,173,71,.85)':'rgba(192,0,0,.75)'),order:1}]},
-    options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
-     plugins:{legend:{position:'top',labels:{font:{size:10},boxWidth:12}},
-      tooltip:{callbacks:{label:c=>' '+c.dataset.label+': $'+c.parsed.y.toFixed(1)+'M'}}},
-     scales:{y:{ticks:{callback:v=>'$'+v+'M',font:{size:9}},grid:{color:'#eee'}},x:{ticks:{font:{size:9}}}}}});
+  chPL=new Chart($('ch_pl'),{type:'bar',data:{labels,datasets:[
+   {label:'Net revenue',data:Y.map(y=>+(y.totalRev/1e6).toFixed(2)),backgroundColor:'rgba(46,117,182,.75)',order:2},
+   {label:'EBITDA',data:Y.map(y=>+(y.ebitda/1e6).toFixed(2)),
+    backgroundColor:Y.map(y=>y.ebitda>=0?'rgba(112,173,71,.85)':'rgba(192,0,0,.75)'),order:1}]},
+   options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top',labels:{font:{size:10},boxWidth:12}},
+     tooltip:{callbacks:{label:c=>' '+c.dataset.label+': $'+c.parsed.y.toFixed(1)+'M'}}},
+    scales:{y:{ticks:{callback:v=>'$'+v+'M',font:{size:9}},grid:{color:'#eee'}},x:{ticks:{font:{size:9}}}}}});
+  const COL=['#2E75B6','#ED7D31','#70AD47','#7030A0'];
   if(chCons)chCons.destroy();
-  const pc={'Seed':'#2E75B6','Ser A':'#4472C4','Ser B':'#70AD47','Steady':'#ED7D31'};
-  chCons=mk($('ch_cons'),{type:'bar',data:{labels,datasets:[
-    {label:'Consumers (K)',data:Y.map(y=>+(y.cons/1000).toFixed(1)),backgroundColor:Y.map(y=>pc[y.phase])}]},
-    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},
-     tooltip:{callbacks:{label:c=>' '+c.parsed.y.toFixed(1)+'K consumers'}}},
-     scales:{y:{ticks:{callback:v=>v+'K',font:{size:9}},grid:{color:'#eee'}},x:{ticks:{font:{size:9}}}}}});
+  chCons=new Chart($('ch_cons'),{type:'bar',data:{labels,datasets:m.segs.map((s,i)=>({
+    label:s.name,data:Y.map(y=>+(y.bySeg[i]/1000).toFixed(1)),backgroundColor:COL[i]}))},
+   options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:9},boxWidth:10}},
+    tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+c.parsed.y.toFixed(1)+'K'}}},
+    scales:{x:{stacked:true,ticks:{font:{size:9}}},y:{stacked:true,ticks:{callback:v=>v+'K',font:{size:9}},grid:{color:'#eee'}}}}});
   if(chMix)chMix.destroy();
-  chMix=mk($('ch_mix'),{type:'bar',data:{labels,datasets:[
-    {label:'T-bill NIM',data:Y.map(y=>+(y.nim/1e6).toFixed(3)),backgroundColor:'rgba(31,78,121,.85)'},
-    {label:'Transaction fees',data:Y.map(y=>+((y.qr+y.rainNet)/1e6).toFixed(3)),backgroundColor:'rgba(46,117,182,.7)'},
-    {label:'AUM fee',data:Y.map(y=>+(y.aum/1e6).toFixed(3)),backgroundColor:'rgba(112,173,71,.9)'}]},
-    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:10},boxWidth:12}},
-     tooltip:{callbacks:{label:c=>' '+c.dataset.label+': $'+c.parsed.y.toFixed(2)+'M'}}},
-     scales:{x:{stacked:true,ticks:{font:{size:9}}},y:{stacked:true,ticks:{callback:v=>'$'+v+'M',font:{size:9}},grid:{color:'#eee'}}}}});
-  if(chAumCon)chAumCon.destroy();
-  chAumCon=mk($('ch_aumcon'),{type:'line',data:{labels,datasets:[
-    {label:'AUM fee / consumer / mo',data:Y.map(y=>+y.ue.aumMo.toFixed(3)),
-     borderColor:'#70AD47',backgroundColor:'rgba(112,173,71,.15)',fill:true,tension:.3,yAxisID:'y'},
-    {label:'AUM share of contribution',data:Y.map(y=>+(y.ue.aumShare*100).toFixed(2)),
-     borderColor:'#ED7D31',borderDash:[5,4],fill:false,tension:.3,yAxisID:'y1'}]},
-    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:10},boxWidth:12}}},
-     scales:{y:{position:'left',ticks:{callback:v=>'$'+v.toFixed(2),font:{size:9}},grid:{color:'#eee'}},
-             y1:{position:'right',ticks:{callback:v=>v+'%',font:{size:9}},grid:{display:false}},
-             x:{ticks:{font:{size:9}}}}}});
+  chMix=new Chart($('ch_mix'),{type:'bar',data:{labels,datasets:[
+   {label:'T-bill NIM',data:Y.map(y=>+(y.nim/1e6).toFixed(3)),backgroundColor:'rgba(31,78,121,.85)'},
+   {label:'QR payments',data:Y.map(y=>+(y.qr/1e6).toFixed(3)),backgroundColor:'rgba(46,117,182,.7)'},
+   {label:'AUM fee (net of Dinari)',data:Y.map(y=>+(y.aum/1e6).toFixed(3)),backgroundColor:'rgba(112,173,71,.9)'}]},
+   options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:9},boxWidth:10}},
+    tooltip:{callbacks:{label:c=>' '+c.dataset.label+': $'+c.parsed.y.toFixed(2)+'M'}}},
+    scales:{x:{stacked:true,ticks:{font:{size:9}}},y:{stacked:true,ticks:{callback:v=>'$'+v+'M',font:{size:9}},grid:{color:'#eee'}}}}});
+  if(chCon)chCon.destroy();
+  chCon=new Chart($('ch_con'),{type:'line',data:{labels,datasets:[
+   {label:'Revenue / customer / mo',data:Y.map(y=>+y.ue.rev.toFixed(2)),borderColor:'#2E75B6',fill:false,tension:.3},
+   {label:'Net contribution / mo',data:Y.map(y=>+y.ue.net.toFixed(2)),borderColor:'#70AD47',
+    backgroundColor:'rgba(112,173,71,.15)',fill:true,tension:.3},
+   {label:'AUM fee / mo',data:Y.map(y=>+y.ue.aumMo.toFixed(3)),borderColor:'#ED7D31',borderDash:[5,4],fill:false,tension:.3}]},
+   options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:9},boxWidth:10}}},
+    scales:{y:{ticks:{callback:v=>'$'+v.toFixed(2),font:{size:9}},grid:{color:'#eee'}},x:{ticks:{font:{size:9}}}}}});
 
   const row=(l,c,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+c.map(x=>`<td>${x}</td>`).join('')+'</tr>';
   $('t_summary').innerHTML='<thead><tr><th>Metric</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
-    row('Phase',Y.map(y=>`<span style="font-size:10px;color:#888">${y.phase}</span>`))+
-    row('Merchants / operators',Y.map(y=>fN(y.merch)))+
-    row('Consumers',Y.map(y=>fN(y.cons)))+
-    row('T-bill NIM',Y.map(y=>fM(y.nim)),'bold')+
-    row('Transaction fees',Y.map(y=>fM(y.qr+y.rainNet)))+
-    row('AUM fee',Y.map(y=>fM(y.aum)),'bold hl')+
-    row('Net revenue',Y.map(y=>fM(y.totalRev)),'bold')+
-    row('AUM % of net revenue',Y.map(y=>fP(y.totalRev>0?y.aum/y.totalRev:0)),'hl')+
-    row('EBITDA',Y.map(y=>`<span class="${y.ebitda>=0?'pos':'neg'}">${fM(y.ebitda)}</span>`),'bold')+
-    row('Total AUM',Y.map(y=>fM(y.A.close)))+
-    row('AUM per investor',Y.map(y=>y.A.users?fD(y.A.close/y.A.users):'—'))+
-    row('LTV : CAC',Y.map(y=>`<span class="${y.ue.ratio>=3?'pos':'neg'}">${fX(y.ue.ratio)}</span>`),'bold hl')+
-    '</tbody>';
-  renderPnl(m); renderUnit(m); renderAum(m);
+   row('Stage',Y.map(y=>`<span style="font-size:10px;color:#888">${y.stage}</span>`))+
+   row('Funded customers',Y.map(y=>fN(y.cust)))+
+   row('Wallet balances',Y.map(y=>fM(y.bal)))+
+   row('T-bill NIM',Y.map(y=>fM(y.nim)),'bold')+
+   row('QR payments',Y.map(y=>fM(y.qr)))+
+   row('AUM fee (net)',Y.map(y=>fM(y.aum)),'bold hl')+
+   row('NET REVENUE',Y.map(y=>fM(y.totalRev)),'bold rule')+
+   row('AUM % of revenue',Y.map(y=>fP(y.totalRev>0?y.aum/y.totalRev:0)),'hl')+
+   row('EBITDA',Y.map(y=>`<span class="${y.ebitda>=0?'pos':'neg'}">${fM(y.ebitda)}</span>`),'bold')+
+   row('Total AUM',Y.map(y=>fM(y.A.close)))+
+   row('Revenue / customer / yr',Y.map(y=>fD(y.cust?y.totalRev/y.cust:0)))+
+   row('LTV : CAC',Y.map(y=>`<span class="${y.ue.ratio>=3?'pos':'neg'}">${fX(y.ue.ratio)}</span>`),'bold hl')+
+   '</tbody>';
+  renderCust(m); renderUnit(m); renderPnl(m); renderAum(m); renderSleeve(m);
 }
-
-function renderPnl(m){
-  const Y=m.years, row=(l,c,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+c.map(x=>`<td>${x}</td>`).join('')+'</tr>';
-  $('c_costbasis').innerHTML=
-    `<b>Revenue basis — net, not gross.</b> Following the post-pivot model, T-bill income is presented <b>net</b>:
-     revenue is the ${fP(m.sleeve)} sleeve Vaulta keeps, plus fees, plus the AUM fee. The ${fP(1-m.sleeve)} consumer
-     reward is netted out before revenue and kept as a memo line — it is not a COGS item.
-     <b>COGS is variable infra only</b> ($${varInfra.toFixed(2)} per consumer per month). Rain's $${RCT.toFixed(2)}
-     per-transaction fee is netted inside the interchange line. Regulatory capital ($6M) is a balance-sheet raise,
-     excluded from the P&amp;L. Everything else is operating expense.`;
-  $('t_pnl').innerHTML='<thead><tr><th>Line</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
-    row('memo: gross T-bill float',Y.map(y=>fD(y.floatGross)),'sub-row')+
-    row('memo: Vaulta Rewards paid out',Y.map(y=>fD(-y.rewards)),'sub-row')+
-    row('T-bill NIM (sleeve)',Y.map(y=>fD(y.nim)))+
-    row('QR merchant fees',Y.map(y=>fD(y.qr)))+
-    row('Rain interchange (net of txn cost)',Y.map(y=>fD(y.rainNet)))+
-    row('AUM fee',Y.map(y=>fD(y.aum)),'hl')+
-    row('NET REVENUE',Y.map(y=>fD(y.totalRev)),'bold rule')+
-    row('Less: variable infra (COGS)',Y.map(y=>fD(-y.infraVar)),'sub-row')+
-    row('GROSS PROFIT',Y.map(y=>fD(y.gp)),'bold')+
-    row('Gross margin',Y.map(y=>fP(y.totalRev>0?y.gp/y.totalRev:0)),'sub-row')+
-    row('Engineering',Y.map(y=>fD(-y.engCost)),'sub-row')+
-    row('Customer service',Y.map(y=>fD(-y.csCost)),'sub-row')+
-    row('Legal / mgmt / security',Y.map(y=>fD(-y.otherPay)),'sub-row')+
-    row('Sales (BD comp)',Y.map(y=>fD(-y.salesCost)),'sub-row')+
-    row('Brand marketing',Y.map(y=>fD(-y.brand)),'sub-row')+
-    row('Activation',Y.map(y=>fD(-y.activationCost)),'sub-row')+
-    row('Referrals',Y.map(y=>fD(-y.refrl)),'sub-row')+
-    row('Fixed infra',Y.map(y=>fD(-y.infraFix)),'sub-row')+
-    row('G&amp;A (incl. compliance)',Y.map(y=>fD(-y.ga)),'sub-row')+
-    row('Legal retainer',Y.map(y=>fD(-y.legalRet)),'sub-row')+
-    row('KYC',Y.map(y=>fD(-y.kyc)),'sub-row')+
-    row('TOTAL OPEX',Y.map(y=>fD(-y.opex)),'bold')+
-    row('EBITDA',Y.map(y=>`<span class="${y.ebitda>=0?'pos':'neg'}">${fD(y.ebitda)}</span>`),'bold rule')+
-    row('EBITDA margin',Y.map(y=>fP(y.totalRev>0?y.ebitda/y.totalRev:0)),'sub-row')+
-    '</tbody>';
-  $('t_heads').innerHTML='<thead><tr><th>Function</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
-    row('Engineering',Y.map(y=>fN(y.engHeads)))+
-    row('Customer service',Y.map(y=>fN(y.csHeads)))+
-    row('Leadership',Y.map(y=>fN(y.mgmtHeads)))+
-    row('Legal',Y.map(y=>fN(y.legalHeads)))+
-    row('Security',Y.map(y=>y.cyberHeads.toFixed(1)))+
-    row('Compliance / BSA-AML',Y.map(y=>fN(y.compHeads)))+
-    row('Local BD',Y.map(y=>fN(y.locBD)))+
-    row('Enterprise BD',Y.map(y=>fN(y.entBD)))+
-    row('TOTAL',Y.map(y=>fN(y.heads)),'bold rule')+
-    row('Consumers / employee',Y.map(y=>y.heads?fN(y.cons/y.heads):'—'),'sub-row')+
-    '</tbody>';
-  $('t_cash').innerHTML='<thead><tr><th>Line</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
-    row('Equity raised',Y.map(y=>y.cash.inflow?fD(y.cash.inflow):'—'))+
-    row('EBITDA',Y.map(y=>fD(y.cash.eb)))+
-    row('Closing cash',Y.map(y=>`<span class="${y.cash.close>=0?'pos':'neg'}">${fD(y.cash.close)}</span>`),'bold')+
-    '</tbody>';
-  const vr=(l,v,cls)=>`<tr class="${cls||''}"><td>${l}</td><td>${v}</td></tr>`;
-  $('t_val').innerHTML='<thead><tr><th>Item</th><th>Value</th></tr></thead><tbody>'+
-    vr('Seed raise',fD(m.seedRaise))+vr('Series A raise',fD(m.serARaise))+
-    vr('Series B raise',fD(m.serBRaise))+
-    vr('Regulatory capital (balance sheet)',fD(REGCAP))+
-    vr('Total equity raised',fD(m.seedRaise+m.serARaise+m.serBRaise),'bold')+
-    vr('PV of Years 1–10 EBITDA',fD(m.pvSum))+vr('Year 10 EBITDA',fD(m.eb10))+
-    vr('PV of terminal value',fD(m.pvTV))+
-    vr('ENTERPRISE VALUE',fD(m.EV),'bold hl')+vr('Risk-adjusted EV',fD(m.raEV),'bold hl')+
-    '</tbody>';
+function renderCust(m){
+  const Y=m.years,row=(l,c,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+c.map(x=>`<td>${x}</td>`).join('')+'</tr>';
+  $('c_segnote').innerHTML=`<b>Stage entry.</b> Seed is Unsatisfied Banked and Crypto Enthusiast only.
+   Unbanked and International switch on at Series A — Unbanked because onboarding and education take a build,
+   International because Reg S and local licensing do. Marketing expense is CAC × gross adds, where gross adds
+   replace churned customers as well as adding net new.`;
+  $('t_custyr').innerHTML='<thead><tr><th>Segment</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
+   m.segs.map((s,i)=>row(s.name,Y.map(y=>y.bySeg[i]>0?fN(y.bySeg[i]):'—'))).join('')+
+   row('TOTAL',Y.map(y=>fN(y.cust)),'bold rule')+
+   row('Gross adds',Y.map(y=>fN(y.grossAdds)),'sub-row')+
+   '</tbody>';
 }
-
 function renderUnit(m){
-  const U=m.ueSeg,Y=m.years,b=Y[NY-1].ue;
-  $('c_cac').innerHTML=`<b>Two CAC figures, deliberately.</b> The blended CAC used for the headline LTV:CAC is
-    <b>${fD2(b.cac)}</b>, derived from the cost structure itself — (BD comp + activation) ÷ new consumers — exactly as the
-    post-pivot model does. The per-segment CACs in the table below are separate levers used to compare segments against
-    each other. They answer different questions and will not match.`;
-  let h='<thead><tr><th>Metric</th>'+U.map(u=>`<th>${u.name}</th>`).join('')+'<th>Blended Yr 10</th></tr></thead><tbody>';
-  const r=(l,f,bv,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+U.map(u=>`<td>${f(u)}</td>`).join('')+`<td>${bv}</td></tr>`;
-  h+=r('Segment CAC',u=>fD2(u.cac),fD2(b.cac)+' (implied)');
-  h+=r('Wallet balance',u=>fD(u.bal),'—');
-  h+=r('Monthly churn',u=>fP2(u.churn),'—');
-  h+=r('AUM adoption',u=>fP(u.adopt),'—');
-  h+=r('AUM per investor (Yr 10)',u=>fD(u.perUser),'—');
-  h+=r('T-bill NIM / mo',u=>fD2(u.nimMo),fD2(b.nimMo));
-  h+=r('QR fee / mo',u=>fD2(u.qr),fD2(b.qr));
-  h+=r('Card interchange net / mo',u=>fD2(u.rain),fD2(b.rain));
-  h+=r('AUM fee / mo',u=>fD2(u.aumMo),fD2(b.aumMo),'hl');
-  h+=r('Infra / mo',()=>fD2(-varInfra),fD2(-varInfra));
-  h+=r('NET CONTRIBUTION / mo',u=>fD2(u.net),fD2(b.net),'bold rule');
-  h+=r('Discounted LTV',u=>fD(u.ltv),fD(b.ltv),'bold');
-  h+=r('LTV : CAC',u=>`<span class="${u.ratio>=3?'pos':'neg'}">${fX(u.ratio)}</span>`,
+  const Y=m.years,y10=NY;
+  $('c_ue').innerHTML=`<b>How LTV is built.</b> Revenue per customer = T-bill NIM on balance + QR payment fee on spend
+   + AUM fee on accumulated invested balance (net of the Dinari share). Variable costs are support
+   (CS salary ÷ customers per rep) and infra. LTV discounts that contribution at the LTV rate over ${HORIZON} months
+   using each segment's monthly churn. <b>On drop-outs:</b> CAC here is per <b>funded</b> customer, which is how
+   Chime ($109) and Nubank ($7.40) report it — the signups that never funded are already inside those figures.
+   Dividing by the funding rate again would double-count them, so the funding rate is shown as a diagnostic
+   (implied spend per signup) rather than used as a second multiplier.`;
+  let h='<thead><tr><th>Per customer / month</th>'+m.segs.map(s=>`<th>${s.name}</th>`).join('')+'<th>Blended</th></tr></thead><tbody>';
+  const U=m.segs.map((s,i)=>m.ueSegY(i,y10)), b=m.blendY(y10);
+  const r=(l,f,bv,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+U.map(f).map(x=>`<td>${x}</td>`).join('')+`<td>${bv}</td></tr>`;
+  h+=r('Avg balance',(x,i)=>fD(m.segs[i].bal),'—');
+  h+=r('Monthly churn',(x,i)=>fP2(m.segs[i].churn),'—');
+  h+=r('Implied life (months)',x=>x.life.toFixed(0),'—');
+  h+=r('AUM per investor',x=>fD(x.perInv),'—');
+  h+=r('T-bill NIM',x=>fD2(x.nimMo),fD2(b.nimMo));
+  h+=r('QR payments',x=>fD2(x.qrMo),fD2(b.qrMo));
+  h+=r('AUM fee (net)',x=>fD2(x.aumMo),fD2(b.aumMo),'hl');
+  h+=r('REVENUE / CUSTOMER',x=>fD2(x.rev),fD2(b.rev),'bold rule');
+  h+=r('Less: support',x=>fD2(-x.sup),fD2(-b.sup),'sub-row');
+  h+=r('Less: infra',x=>fD2(-x.inf),fD2(-b.inf),'sub-row');
+  h+=r('NET CONTRIBUTION / MO',x=>fD2(x.net),fD2(b.net),'bold rule');
+  h+=r('Contribution margin',x=>fP(x.rev>0?x.net/x.rev:0),fP(b.rev>0?b.net/b.rev:0));
+  h+=r('CAC per funded customer',x=>fD2(x.eff),fD2(b.cac),'bold');
+  h+=r('Funding rate (signup → funded)',(x,i)=>fP(m.segs[i].fund),'—');
+  h+=r('memo: implied spend per signup',x=>fD2(x.perSignup),'—','sub-row');
+  h+=r('Discounted LTV',x=>fD(x.ltv),fD(b.ltv),'bold');
+  h+=r('LTV : CAC',x=>`<span class="${x.ratio>=3?'pos':'neg'}">${fX(x.ratio)}</span>`,
        `<span class="${b.ratio>=3?'pos':'neg'}">${fX(b.ratio)}</span>`,'bold hl');
-  h+=r('CAC payback (months)',u=>isFinite(u.payback)?u.payback.toFixed(1):'n/a',
+  h+=r('CAC payback (months)',x=>isFinite(x.payback)?x.payback.toFixed(1):'n/a',
        isFinite(b.payback)?b.payback.toFixed(1):'n/a');
-  h+=r('AUM share of contribution',u=>fP(u.aumShare),fP(b.aumShare));
+  h+=r('AUM share of contribution',x=>fP(x.aumShare),fP(b.aumShare));
   $('t_unit').innerHTML=h+'</tbody>';
   const row=(l,c,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+c.map(x=>`<td>${x}</td>`).join('')+'</tr>';
-  $('t_uebyyear').innerHTML='<thead><tr><th>Per consumer / month</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
-    row('T-bill NIM',Y.map(y=>fD2(y.ue.nimMo)))+
-    row('QR fee',Y.map(y=>fD2(y.ue.qr)))+
-    row('Card interchange net',Y.map(y=>fD2(y.ue.rain)))+
-    row('AUM fee',Y.map(y=>fD2(y.ue.aumMo)),'bold hl')+
-    row('Infra',Y.map(()=>fD2(-varInfra)))+
-    row('Net contribution',Y.map(y=>fD2(y.ue.net)),'bold rule')+
-    row('AUM share of contribution',Y.map(y=>fP(y.ue.aumShare)),'hl')+
-    row('Implied CAC',Y.map(y=>fD2(y.ue.cac)))+
-    row('Discounted LTV',Y.map(y=>fD(y.ue.ltv)))+
-    row('LTV : CAC',Y.map(y=>`<span class="${y.ue.ratio>=3?'pos':'neg'}">${fX(y.ue.ratio)}</span>`),'bold')+
-    '</tbody>';
-  renderSleeve(m);
+  $('t_uebyyear').innerHTML='<thead><tr><th>Per customer / month</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
+   row('T-bill NIM',Y.map(y=>fD2(y.ue.nimMo)))+
+   row('QR payments',Y.map(y=>fD2(y.ue.qrMo)))+
+   row('AUM fee (net)',Y.map(y=>fD2(y.ue.aumMo)),'bold hl')+
+   row('Revenue / customer',Y.map(y=>fD2(y.ue.rev)),'bold')+
+   row('Less: support + infra',Y.map(y=>fD2(-(y.ue.sup+y.ue.inf))),'sub-row')+
+   row('Net contribution',Y.map(y=>fD2(y.ue.net)),'bold rule')+
+   row('AUM share of contribution',Y.map(y=>fP(y.ue.aumShare)),'hl')+
+   row('Effective CAC',Y.map(y=>fD2(y.ue.cac)))+
+   row('Discounted LTV',Y.map(y=>fD(y.ue.ltv)))+
+   row('LTV : CAC',Y.map(y=>`<span class="${y.ue.ratio>=3?'pos':'neg'}">${fX(y.ue.ratio)}</span>`),'bold')+
+   '</tbody>';
 }
-
 function renderSleeve(m){
-  const sl=[0.10,0.20,0.30,0.40,0.50,0.58,0.70], saved=$('i_sleeve').value, rows=[];
-  sl.forEach(s=>{ $('i_sleeve').value=s; const mm=model(), u=mm.years[NY-1].ue;
-    rows.push({rwd:val('i_tbill')*(1-s),net:u.net,ratio:u.ratio,ev:mm.EV,raev:mm.raEV,
-               be:mm.beYear,eb10:mm.years[NY-1].ebitda}); });
+  const sl=[0.10,0.20,0.30,0.40,0.50,0.58,0.70],saved=$('i_sleeve').value,rows=[];
+  sl.forEach(s=>{$('i_sleeve').value=s;const mm=model(),u=mm.years[NY-1].ue;
+   rows.push({rwd:val('i_tbill')*(1-s),net:u.net,ratio:u.ratio,ev:mm.EV,raev:mm.raEV,
+              be:mm.beYear,eb10:mm.years[NY-1].ebitda});});
   $('i_sleeve').value=saved;
   const hi=i=>Math.abs(sl[i]-m.sleeve)<0.005?'hl':'';
-  const line=(l,fn,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+
-    rows.map((r,i)=>`<td class="${hi(i)}">${fn(r)}</td>`).join('')+'</tr>';
+  const line=(l,fn,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+rows.map((r,i)=>`<td class="${hi(i)}">${fn(r)}</td>`).join('')+'</tr>';
   const html='<thead><tr><th>Vaulta sleeve</th>'+sl.map(s=>`<th>${fP(s)}</th>`).join('')+'</tr></thead><tbody>'+
-    line('Consumer effective reward',r=>fP2(r.rwd))+
-    line('Net contribution / mo (Yr 10)',r=>fD2(r.net))+
-    line('LTV : CAC',r=>`<span class="${r.ratio>=3?'pos':'neg'}">${fX(r.ratio)}</span>`,'bold')+
-    line('Year 10 EBITDA',r=>`<span class="${r.eb10>=0?'pos':'neg'}">${fM(r.eb10)}</span>`)+
-    line('EBITDA positive',r=>r.be?'Year '+r.be:'<span class="neg">never</span>')+
-    line('ENTERPRISE VALUE',r=>`<span class="${r.ev>=0?'pos':'neg'}">${fM(r.ev)}</span>`,'bold rule')+
-    line('Risk-adjusted EV',r=>`<span class="${r.raev>=0?'pos':'neg'}">${fM(r.raev)}</span>`,'bold')+
-    '</tbody>';
-  $('t_sleeve').innerHTML=html;
-  if($('t_sleeve2')) $('t_sleeve2').innerHTML=html;
+   line('Consumer effective reward',r=>fP2(r.rwd))+
+   line('Net contribution / mo (Yr 10)',r=>fD2(r.net))+
+   line('LTV : CAC',r=>`<span class="${r.ratio>=3?'pos':'neg'}">${fX(r.ratio)}</span>`,'bold')+
+   line('Year 10 EBITDA',r=>`<span class="${r.eb10>=0?'pos':'neg'}">${fM(r.eb10)}</span>`)+
+   line('EBITDA positive',r=>r.be?'Year '+r.be:'<span class="neg">never</span>')+
+   line('ENTERPRISE VALUE',r=>`<span class="${r.ev>=0?'pos':'neg'}">${fM(r.ev)}</span>`,'bold rule')+
+   line('Risk-adjusted EV',r=>`<span class="${r.raev>=0?'pos':'neg'}">${fM(r.raev)}</span>`,'bold')+'</tbody>';
+  $('t_sleeve').innerHTML=html; if($('t_sleeve2')) $('t_sleeve2').innerHTML=html;
 }
-
+function renderPnl(m){
+  const Y=m.years,row=(l,c,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+c.map(x=>`<td>${x}</td>`).join('')+'</tr>';
+  $('c_costbasis').innerHTML=`<b>What changed from the bill-pay cost structure.</b> The local and enterprise BD deal
+   engine is gone — this is a consumer business, so acquisition is <b>CAC × gross adds</b> and there is no separate
+   brand or activation line to double-count. One alliance hire remains for partnerships. Compliance is broken out of
+   G&amp;A as its own payroll line and ramped harder, because a money-management product carries suitability and
+   BSA/AML obligations a wallet does not. Two new lines appear: the <b>Dinari revenue share</b> on AUM
+   (${fP(m.dinariShare)} of the gross fee) and <b>international licensing</b> per live market. Card and Apple&nbsp;Pay
+   interchange is a pass-through and is excluded entirely. Revenue is net — the sleeve is revenue, Vaulta Rewards are
+   a memo. COGS is variable infra only.`;
+  $('t_pnl').innerHTML='<thead><tr><th>Line</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
+   row('memo: gross T-bill float',Y.map(y=>fD(y.nim+y.rewards)),'sub-row')+
+   row('memo: Vaulta Rewards paid out',Y.map(y=>fD(-y.rewards)),'sub-row')+
+   row('T-bill NIM (sleeve)',Y.map(y=>fD(y.nim)))+
+   row('QR payment fees',Y.map(y=>fD(y.qr)))+
+   row('AUM fee (gross)',Y.map(y=>fD(y.aumGross)),'sub-row')+
+   row('less Dinari revenue share',Y.map(y=>fD(-y.dinari)),'sub-row')+
+   row('AUM fee (net to Vaulta)',Y.map(y=>fD(y.aum)),'hl')+
+   row('NET REVENUE',Y.map(y=>fD(y.totalRev)),'bold rule')+
+   row('Less: variable infra (COGS)',Y.map(y=>fD(-y.infraVar)),'sub-row')+
+   row('GROSS PROFIT',Y.map(y=>fD(y.gp)),'bold')+
+   row('Gross margin',Y.map(y=>fP(y.totalRev>0?y.gp/y.totalRev:0)),'sub-row')+
+   row('Engineering',Y.map(y=>fD(-y.engCost)),'sub-row')+
+   row('Customer service',Y.map(y=>fD(-y.csCost)),'sub-row')+
+   row('Compliance / BSA-AML',Y.map(y=>fD(-y.compCost)),'sub-row')+
+   row('Legal / mgmt / security / alliances',Y.map(y=>fD(-y.otherPay)),'sub-row')+
+   row('Marketing (CAC × gross adds)',Y.map(y=>fD(-y.marketing)),'sub-row')+
+   row('KYC',Y.map(y=>fD(-y.kyc)),'sub-row')+
+   row('International licensing',Y.map(y=>y.intlCost?fD(-y.intlCost):'—'),'sub-row')+
+   row('Referrals',Y.map(y=>fD(-y.refrl)),'sub-row')+
+   row('Fixed infra',Y.map(y=>fD(-y.infraFix)),'sub-row')+
+   row('G&amp;A',Y.map(y=>fD(-y.ga)),'sub-row')+
+   row('Legal retainer',Y.map(y=>fD(-y.legalRet)),'sub-row')+
+   row('TOTAL OPEX',Y.map(y=>fD(-y.opex)),'bold')+
+   row('EBITDA',Y.map(y=>`<span class="${y.ebitda>=0?'pos':'neg'}">${fD(y.ebitda)}</span>`),'bold rule')+
+   row('EBITDA margin',Y.map(y=>fP(y.totalRev>0?y.ebitda/y.totalRev:0)),'sub-row')+'</tbody>';
+  $('t_heads').innerHTML='<thead><tr><th>Function</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
+   row('Engineering',Y.map(y=>fN(y.engHeads)))+row('Customer service',Y.map(y=>fN(y.csHeads)))+
+   row('Compliance / BSA-AML',Y.map(y=>fN(y.compHeads)))+row('Leadership',Y.map(y=>fN(y.mgmtHeads)))+
+   row('Legal',Y.map(y=>fN(y.legalHeads)))+row('Security',Y.map(y=>y.cyberHeads.toFixed(1)))+
+   row('Alliances',Y.map(()=>fN(val('i_alliance'))))+
+   row('TOTAL',Y.map(y=>fN(y.heads)),'bold rule')+
+   row('Customers / employee',Y.map(y=>y.heads?fN(y.cust/y.heads):'—'),'sub-row')+
+   row('Live intl markets',Y.map(y=>y.markets||'—'),'sub-row')+'</tbody>';
+  $('t_cash').innerHTML='<thead><tr><th>Line</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
+   row('Equity raised',Y.map(y=>y.cash.inflow?fD(y.cash.inflow):'—'))+
+   row('EBITDA',Y.map(y=>fD(y.cash.eb)))+
+   row('Closing cash',Y.map(y=>`<span class="${y.cash.close>=0?'pos':'neg'}">${fD(y.cash.close)}</span>`),'bold')+'</tbody>';
+  const vr=(l,v,cls)=>`<tr class="${cls||''}"><td>${l}</td><td>${v}</td></tr>`;
+  $('t_val').innerHTML='<thead><tr><th>Item</th><th>Value</th></tr></thead><tbody>'+
+   vr('Seed raise',fD(m.seedRaise))+vr('Series A raise',fD(m.serARaise))+
+   vr('Series B raise',fD(m.serBRaise))+vr('Series C raise',fD(m.serCRaise))+
+   vr('Regulatory capital (balance sheet)',fD(REGCAP))+
+   vr('Total equity raised',fD(m.seedRaise+m.serARaise+m.serBRaise+m.serCRaise),'bold')+
+   vr('PV of Years 1–10 EBITDA',fD(m.pvSum))+vr('Year 10 EBITDA',fD(m.eb10))+
+   vr('PV of terminal value',fD(m.pvTV))+
+   vr('ENTERPRISE VALUE',fD(m.EV),'bold hl')+vr('Risk-adjusted EV',fD(m.raEV),'bold hl')+'</tbody>';
+}
 function renderAum(m){
   const Y=m.years,row=(l,c,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+c.map(x=>`<td>${x}</td>`).join('')+'</tr>';
   $('t_roll').innerHTML='<thead><tr><th>Roll-forward</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
-    row('Investors',Y.map(y=>fN(y.A.users)))+
-    row('Opening AUM',Y.map(y=>fM(y.A.open)))+
-    row('+ Rollovers at signup',Y.map(y=>fM(y.A.roll)),'sub-row')+
-    row('+ Contributions',Y.map(y=>fM(y.A.con)),'sub-row')+
-    row('− Redemptions',Y.map(y=>fM(y.A.red)),'sub-row')+
-    row('− Churn leakage',Y.map(y=>fM(y.A.leak)),'sub-row')+
-    row('+ Market return',Y.map(y=>fM(y.A.ret)),'sub-row')+
-    row('CLOSING AUM',Y.map(y=>fM(y.A.close)),'bold rule')+
-    row('AUM per investor',Y.map(y=>y.A.users?fD(y.A.close/y.A.users):'—'),'bold')+
-    row('AUM fee revenue',Y.map(y=>fM(y.aum)),'bold hl')+'</tbody>';
-  $('f_algebra').textContent='AUM × fee  =  balances × t-bill rate × sleeve\n'+
-    'AUM ÷ balances  =  ('+fP2(m.tbill)+' × '+fP(m.sleeve)+') ÷ '+fP2(m.aumFee)+'  =  '+fX(m.required);
+   row('Investors',Y.map(y=>fN(y.A.users)))+row('Opening AUM',Y.map(y=>fM(y.A.open)))+
+   row('+ Rollovers',Y.map(y=>fM(y.A.roll)),'sub-row')+row('+ Contributions',Y.map(y=>fM(y.A.con)),'sub-row')+
+   row('− Redemptions',Y.map(y=>fM(y.A.red)),'sub-row')+row('− Churn leakage',Y.map(y=>fM(y.A.leak)),'sub-row')+
+   row('+ Market return',Y.map(y=>fM(y.A.ret)),'sub-row')+
+   row('CLOSING AUM',Y.map(y=>fM(y.A.close)),'bold rule')+
+   row('AUM per investor',Y.map(y=>y.A.users?fD(y.A.close/y.A.users):'—'),'bold')+
+   row('AUM fee net to Vaulta',Y.map(y=>fM(y.aum)),'bold hl')+'</tbody>';
+  $('f_algebra').textContent='AUM × net fee  =  balances × t-bill rate × sleeve\n'+
+   'AUM ÷ balances  =  ('+fP2(m.tbill)+' × '+fP(m.sleeve)+') ÷ '+fP2(m.aumFeeNet)+'  =  '+fX(m.required);
   $('t_cross').innerHTML='<thead><tr><th>Metric</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
-    row('Total AUM',Y.map(y=>fM(y.A.close)))+
-    row('Total wallet balances',Y.map(y=>fM(y.totalBal)))+
-    row('AUM ÷ balances',Y.map(y=>fX(y.totalBal>0?y.A.close/y.totalBal:0)),'bold hl')+
-    row('Required ratio',Y.map(()=>fX(m.required)))+
-    row('AUM fee ÷ T-bill NIM',Y.map(y=>fX(y.nim>0?y.aum/y.nim:0)),'bold')+'</tbody>';
-  const sl=[0.10,0.20,0.35,0.50,0.58],fe=[0.0025,0.0050,0.0075,0.0100,0.0150];
-  let h='<thead><tr><th>AUM fee \\ sleeve</th>'+sl.map(s=>`<th>${fP(s)}</th>`).join('')+'</tr></thead><tbody>';
-  fe.forEach(f=>{h+=`<tr><td class="bold">${fP2(f)}</td>`+sl.map(s=>{
-    const n=Math.abs(f-m.aumFee)<0.0003&&Math.abs(s-m.sleeve)<0.005;
-    return `<td class="${n?'hl bold':''}">${fX(m.tbill*s/f)}</td>`;}).join('')+'</tr>';});
-  $('t_sens').innerHTML=h+'</tbody>';
+   row('Total AUM',Y.map(y=>fM(y.A.close)))+row('Wallet balances',Y.map(y=>fM(y.bal)))+
+   row('AUM ÷ balances',Y.map(y=>fX(y.bal>0?y.A.close/y.bal:0)),'bold hl')+
+   row('Required ratio',Y.map(()=>fX(m.required)))+
+   row('AUM fee ÷ NIM',Y.map(y=>fX(y.nim>0?y.aum/y.nim:0)),'bold')+'</tbody>';
 }
 
 const RESEARCH=[
- ["AUM fee — 0.25%/yr","Betterment Basic and Wealthfront both charge a flat 0.25% advisory fee. Acorns charges $1–3/month, which on its ~$2,142 average balance is roughly 1.7%. Matching 0.25% prices Vaulta at the robo-advisor standard rather than above it.",
-  "<a href='https://www.unbiased.com/discover/financial-advice/best-robo-advisors' target='_blank'>unbiased.com</a> · <a href='https://www.acorns.com/learn/investing/acorns-vs-percentage-based-apps/' target='_blank'>acorns.com</a>"],
- ["S&P 500 return — 8.5%/yr","Historical nominal total return with dividends reinvested is ~10.4% since 1957 and ~10.3–10.5% over the last 30 years. Forward forecasts are far lower — Vanguard 3.9–5.9%, BlackRock ~5%. The 8.5% default sits below the historical record and above the forecasts, and the engine applies it net of the AUM fee.",
-  "<a href='https://www.officialdata.org/us/stocks/s-p-500' target='_blank'>officialdata.org</a> · <a href='https://www.fidelity.com/learning-center/trading-investing/sp-500-average-return' target='_blank'>Fidelity</a> · <a href='https://corporate.vanguard.com/content/dam/corp/research/pdf/isg_vemo_2026.pdf' target='_blank'>Vanguard</a>"],
- ["Contribution — $50/mo (segment 2)","Acorns reports most customers investing roughly $50–60/month into core accounts. Segment 2 sits at the bottom of that range; other segments scale by disposable income from $15 to $200.",
-  "<a href='https://investingintheweb.com/brokers/acorn-statistics/' target='_blank'>investingintheweb.com</a>"],
- ["Reference balance — $2,142","Acorns held $30bn across 14m registered users (Jul 2026); $1,876 in 2025, $1,439 in 2024 — per-user balances compounding ~15%/yr. Closest mass-market analogue.",
-  "<a href='https://investingintheweb.com/brokers/acorn-statistics/' target='_blank'>investingintheweb.com</a>"],
- ["Affluent ceiling — ~$66,000","Betterment ~$65bn across 1m+ clients; Wealthfront $95bn across 1.4m+. The primary-brokerage tier, ~30x the Acorns balance.",
-  "<a href='https://sacra.com/research/wealthfront-betterment-robo-advisor-resurrection/' target='_blank'>sacra.com</a>"],
- ["Saving capacity — 1–3.5% of balance","US personal saving rate was 2.7–3.0% of income in mid-2026; top-quintile earners save 15–25%, bottom-quintile negative. Used to sanity-check the $/month defaults and available as the alternative contribution basis.",
-  "<a href='https://tradingeconomics.com/united-states/personal-saving-rate-percent-m-saar-fed-data.html' target='_blank'>tradingeconomics.com</a>"],
- ["The product is real — live Aug 2026","Dinari launched 724 tokenized US stocks including the full S&P 500 for US self-custody wallets, settled in USDC across 4 chains, each dShare backed 1:1 in regulated custody.",
-  "<a href='https://www.coindesk.com/business/2026/08/04/dinari-brings-tokenized-u-s-stocks-to-american-investors-as-equity-race-heats-up' target='_blank'>CoinDesk</a> · <a href='https://www.theblock.co/post/410588/dinari-tokenized-sp-500-stocks-self-custody-wallets-using-usdc' target='_blank'>The Block</a>"],
- ["Cost structure — post-pivot v7","Headcount by function, BD comp by segment, brand marketing as % of revenue, activation per new customer, G&A as % of revenue with a $400k floor, and regulatory capital excluded from the P&L — all carried over unchanged from the Vaulta-Pay-Model.",
-  "Vaulta-Pay-Model main branch, commit afca2dc"],
- ["Rollover at signup — $0–2,000","<b>Not sourced.</b> No public data on how much new micro-investing customers transfer in at account opening. Defaults are deliberately low ($0 for the underbanked segment). This is the single most important lever for AUM.",
+ ["CAC — Unsatisfied Banked $55","Chime's CAC was $109 at scale (S-1 2024) and $30–50 at early stage. This segment is already unhappy with its bank, so acquisition sits at the low end of Chime's own range rather than above it.",
+  "<a href='https://www.forbes.com/sites/ronshevlin/2025/03/23/what-are-banks-and-fintechs-real-customer-acquisition-costs/' target='_blank'>Forbes / Cornerstone</a>"],
+ ["CAC — Unbanked $120","<b>Not benchmarked.</b> No fintech discloses CAC for the truly unbanked. Set above Chime's at-scale $109 because conversion requires education, trust-building and assisted onboarding. The FDIC puts unbanked households at 4.2% of the US and falling — a small and shrinking pool, with 14.2% underbanked alongside it.",
+  "<a href='https://www.bankingdive.com/news/underbanked-us-population-grows-fdic-survey-unbanked-households/732820/' target='_blank'>FDIC via Banking Dive</a> · <span style='color:#C00000;font-weight:700'>CAC is a judgement</span>"],
+ ["CAC — Crypto Enthusiast $45","Reached through crypto-native channels with high organic share. Below Chime's at-scale figure, above Cash App's legendary ~$10 at 45m MAU.",
+  "<a href='https://www.crnrstone.com/gonzobanker/banks-fintechs-real-customer-acquisition-cost' target='_blank'>Cornerstone</a>"],
+ ["CAC — International $25","Nubank's CAC was <b>$7.40</b> in 2025 (about 32% paid; 80–90% of customers arrive by word-of-mouth). Revolut's blended CAC roughly doubled from £10 in 2021 to £20 in 2023. $25 sits above both, since Vaulta will not start with Nubank's organic engine.",
+  "<a href='https://www.sec.gov/Archives/edgar/data/1691493/000129281426002166/nuform20f_2025.htm' target='_blank'>Nu Holdings 20-F FY2025</a> · <a href='https://whitesight.net/inside-nubanks-playbook-for-cost-efficient-hypergrowth/' target='_blank'>WhiteSight</a>"],
+ ["International demand is real","Turkey rose to #5 in the Q1-2026 global crypto adoption index, growing 7% YoY to $40bn on structural dollar demand from lira depreciation — the only major market to expand. Developed markets contracted hard: US −11%, Korea −28%, UK −17%, Germany −25%. LatAm and South Asia held firm.",
+  "<a href='https://www.trmlabs.com/resources/blog/q1-2026-global-crypto-adoption-index' target='_blank'>TRM Labs Q1 2026</a>"],
+ ["Penetration is still low","The tokenized stock market was ~$1.7bn by June 2026, up 149% YTD, on $6.7bn monthly volume — real but tiny. From 2026 the DTC may create blockchain 'digital twins' of US equities, ETFs and Treasuries, which is the structural tailwind.",
+  "<a href='https://crypto.com/en/research/tokenized-stocks-jun-2026' target='_blank'>crypto.com research</a> · <a href='https://www.coindesk.com/news-analysis/2026/01/17/why-tokenized-stocks-funds-and-gold-will-have-a-breakout-year-in-2026' target='_blank'>CoinDesk</a>"],
+ ["Riding Dinari, not registering","Dinari holds the first broker-dealer registration to offer tokenized stocks and sells white-label API rails so fintechs can embed tokenized US equities <b>without becoming broker-dealers themselves</b>. Its affiliated BD holds the shares and executes the offchain leg. That removes FINRA membership, net capital, Series 7/24 principals, clearing and SIPC from the cost structure — and replaces them with a revenue share.",
+  "<a href='https://finance.yahoo.com/news/dinari-granted-first-broker-dealer-153706691.html' target='_blank'>Dinari BD registration</a> · <a href='https://dinari.com/work-with-dinari' target='_blank'>dinari.com</a>"],
+ ["Dinari revenue share — 30%","<b>Not disclosed.</b> No public pricing for the white-label arrangement. 30% of the gross AUM fee is a placeholder for a typical white-label split and is the single largest unsourced assumption on the revenue side.",
   "<span style='color:#C00000;font-weight:700'>MODELLING JUDGEMENT</span>"],
- ["Redemption 8%/yr · liquidation 100%","<b>Not sourced.</b> No clean public disclosure of micro-investing redemption rates. 100% liquidation on churn assumes every departing wallet customer also closes the brokerage account — the conservative end.",
-  "<span style='color:#C00000;font-weight:700'>MODELLING JUDGEMENT</span>"]];
+ ["AUM fee 0.25% · return 8.5%","Betterment Basic and Wealthfront both charge 0.25%. S&P 500 historical nominal total return is ~10.4% since 1957 and over the last 30 years; forward forecasts are 3.9–5.9% (Vanguard) and ~5% (BlackRock).",
+  "<a href='https://www.officialdata.org/us/stocks/s-p-500' target='_blank'>officialdata.org</a> · <a href='https://www.unbiased.com/discover/financial-advice/best-robo-advisors' target='_blank'>unbiased.com</a>"],
+ ["Contribution $50/mo baseline","Acorns reports most customers investing roughly $50–60/month into core accounts, on a ~$2,142 average balance across 14m registered users.",
+  "<a href='https://investingintheweb.com/brokers/acorn-statistics/' target='_blank'>investingintheweb.com</a>"]];
 const FINDINGS=[
- ["At the 20/80 sleeve the business does not clear its cost structure: enterprise value is negative, EBITDA turns positive only in Year 9, and blended LTV:CAC is about 1.6x against a 3x bar. Value turns positive at roughly a 30% sleeve and LTV:CAC clears 3x at around 45–50%. The sleeve, not AUM, is the dominant value lever.",true],
- ["AUM per investor does now grow — roughly $1,100 in Year 2 to $3,000 by Year 10, passing the ~$2,142 Acorns reports. It converges rather than compounding without limit, because the balance settles near contribution ÷ (leakage − return).",false],
- ["The investment return assumption barely matters. Moving it from 4% to 10.4% changes Year 10 AUM per investor only from $2,733 to $3,097 — about 13%. Contribution flow and leakage dominate compounding at these balance sizes, so arguing about 5.5% versus 8.5% is not where the value is.",true],
- ["Halving the fee from 0.50% to 0.25% halves the AUM line and doubles the crossover hurdle from 1.92x to 3.84x of wallet balances. It is the right competitive price — it matches Betterment and Wealthfront — but it is the single biggest reduction to this revenue line.",false],
- ["The rollover at signup is the real AUM lever: multiplying it 8x takes Year 10 AUM per investor from $2,983 to $7,280 and the AUM line from 4.3% to 10.1% of net revenue. The monthly drip does far less.",false],
- ["The crossover ratio contains no user count. Growth moves both sides equally; only rollover size, contribution, fee or sleeve move it.",false],
- ["The two unsourced levers — rollover at signup and redemption/liquidation — are the ones that most move AUM, and both are set conservatively by default.",true]];
+ ["International is the segment that makes this business work. It has the lowest CAC of the four ($25 against Nubank's actual $7.40), the strongest structural reason to hold dollar assets, and the highest AUM propensity — but it is also the only segment that needs licensing Vaulta does not yet have.",false],
+ ["Unbanked is the weakest segment on every axis: highest CAC, lowest balance, lowest AUM adoption, highest churn and the worst funding rate. It is also a shrinking pool — the FDIC has unbanked households at 4.2% and falling. Worth serving for mission reasons; it will not carry the P&L.",true],
+ ["The Dinari revenue share is the largest unsourced number in the model. At 30% it takes the effective AUM fee from 0.25% to 0.175%, which nearly doubles the ratio of AUM to wallet balances needed before the AUM line matches the sleeve.",true],
+ ["Drop-outs matter more than they look. A 40% funding rate on the Unbanked segment means the effective CAC per funded customer is 2.5x the headline CAC — $300, not $120.",false],
+ ["Compliance was broken out of G&A and ramped harder than the bill-pay model carried it. A money-management product has suitability and BSA/AML obligations a payments wallet does not, even riding a partner broker-dealer.",false],
+ ["The sleeve remains the dominant value lever — more than AUM, more than growth. The sensitivity on the Model tab re-runs the full ten years at each setting.",true]];
+const REVIEW=[
+ ["<b>Removed — local and enterprise BD deal engine.</b> It generated customers from merchant deals, which is a bill-pay motion, not a consumer one. It was also the reason CAC looked strange: acquisition cost was falling out of BD headcount rather than out of a per-customer number.",false],
+ ["<b>Removed — brand marketing as % of revenue, and activation $ per customer.</b> Both are now inside segment CAC. Keeping them alongside CAC × gross adds would have double-counted acquisition.",false],
+ ["<b>Kept — one alliance hire.</b> Partnerships with Dinari, the sponsor bank and payment rails still need an owner; a sales team does not.",false],
+ ["<b>Tightened — customers per CS rep, 30,000 to 15,000.</b> Investment accounts generate materially more support contact than a stored-value wallet.",false],
+ ["<b>Broken out and ramped — compliance / BSA-AML.</b> Previously buried inside G&A at 1–3 heads; now its own payroll line at 1–6, reflecting suitability obligations and cross-border KYC.",false],
+ ["<b>Added — Dinari revenue share.</b> The cost of not being a broker-dealer.",false],
+ ["<b>Added — international licensing per live market.</b> Reg S and local partner cost, scaling with markets opened.",false],
+ ["<b>Excluded — card and Apple Pay interchange.</b> Pass-through economics: the interchange received and the processor cost offset, so putting a net figure in the P&L overstated precision. QR at 0.5% is the only payment line that is genuinely Vaulta's margin.",false],
+ ["<b>Still to resolve.</b> FX spread on international funding and withdrawal is not modelled and could be a real revenue line rather than a cost. Same for a sponsor-bank fee on the US wallet side.",true]];
 $('t_research').innerHTML='<thead><tr><th style="width:20%">Assumption</th><th style="width:50%">Basis</th><th style="width:30%">Source</th></tr></thead><tbody>'+
-  RESEARCH.map(([a,b,c])=>`<tr><td style="text-align:left"><b>${a}</b></td><td style="text-align:left;font-size:11px;line-height:1.5">${b}</td><td style="text-align:left" class="src">${c}</td></tr>`).join('')+'</tbody>';
+ RESEARCH.map(([a,b,c])=>`<tr><td style="text-align:left"><b>${a}</b></td><td style="text-align:left;font-size:11px;line-height:1.5">${b}</td><td style="text-align:left" class="src">${c}</td></tr>`).join('')+'</tbody>';
 $('t_find').innerHTML=FINDINGS.map(([t,w])=>`<li class="${w?'warn':''}">${t}</li>`).join('');
+$('t_review').innerHTML=REVIEW.map(([t,w])=>`<li class="${w?'warn':''}">${t}</li>`).join('');
 
 document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active'); $('tab-'+b.dataset.tab).classList.add('active');}));
-function setMode(mode){ CONTRIB_MODE=mode;
-  $('b_dollar').classList.toggle('on',mode==='dollar'); $('b_pct').classList.toggle('on',mode==='pct');
-  document.querySelectorAll('.segrow.cd').forEach(r=>r.style.display=mode==='dollar'?'flex':'none');
-  document.querySelectorAll('.segrow.cp').forEach(r=>r.style.display=mode==='pct'?'flex':'none');
-  render(); }
-$('b_dollar').addEventListener('click',()=>setMode('dollar'));
-$('b_pct').addEventListener('click',()=>setMode('pct'));
-document.querySelectorAll('input').forEach(el=>el.addEventListener('input',render));
+ document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+ document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+ b.classList.add('active'); $('tab-'+b.dataset.tab).classList.add('active');}));
+buildGrid();
+document.addEventListener('input',e=>{ if(e.target.tagName==='INPUT') render(); });
 render();
 </script>
 </body>
