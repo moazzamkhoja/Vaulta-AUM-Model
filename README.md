@@ -5,8 +5,9 @@ question: **does AUM fee revenue overtake the T-bill sleeve in Years 3–5?**
 
 Two views of the same model:
 
-- **[`index.html`](index.html)** — interactive version. Every lever is a slider; charts, tables and
-  the verdict recompute live. Open it locally, or see the Pages link if publishing is enabled.
+- **▶ [Live interactive model](https://moazzamkhoja.github.io/Vaulta-AUM-Model/)** (`index.html`) —
+  every lever is a slider; charts, tables and the verdict recompute live. Push the rollover multiple
+  or the AUM fee far enough and the verdict flips to YES, which is the point of the exercise.
 - **`Vaulta_AUM_Model_v1.xlsx`** — the same model as a 9-sheet workbook, for auditing the formulas
   cell by cell.
 
