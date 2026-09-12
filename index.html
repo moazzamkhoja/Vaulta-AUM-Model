@@ -209,6 +209,12 @@
     <div class="table-card"><h4>What Drives Value — sleeve sensitivity</h4>
       <div class="scroll"><table id="t_sleeve2"></table></div>
       <p class="note">Each column re-runs the whole 10-year model. Highlighted column is the current setting.</p></div>
+    <div class="table-card"><h4>What Drives Value — QR acceptance sensitivity</h4>
+      <div class="scroll"><table id="t_qrsens"></table></div>
+      <p class="note">Set by the <b>Share of Spend Through QR</b> slider in section ② Payments. Vaulta only earns the
+      0.5% where it controls settlement — on a card transaction the merchant already pays the networks 1.5–2.5% and
+      cannot absorb 0.5% on top unless Vaulta is the acquirer. This is an acceptance-coverage assumption, not customer
+      behaviour, and it is the second-largest swing in the model after the sleeve.</p></div>
   </div>
 </div>
 </div>
@@ -572,7 +578,7 @@ function render(){
    row('Revenue / customer / yr',Y.map(y=>fD(y.cust?y.totalRev/y.cust:0)))+
    row('LTV : CAC',Y.map(y=>`<span class="${y.ue.ratio>=3?'pos':'neg'}">${fX(y.ue.ratio)}</span>`),'bold hl')+
    '</tbody>';
-  renderCust(m); renderUnit(m); renderPnl(m); renderAum(m); renderSleeve(m);
+  renderCust(m); renderUnit(m); renderPnl(m); renderAum(m); renderSleeve(m); renderQR(m);
 }
 function renderCust(m){
   const Y=m.years,row=(l,c,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+c.map(x=>`<td>${x}</td>`).join('')+'</tr>';
@@ -651,6 +657,28 @@ function renderSleeve(m){
    line('ENTERPRISE VALUE',r=>`<span class="${r.ev>=0?'pos':'neg'}">${fM(r.ev)}</span>`,'bold rule')+
    line('Risk-adjusted EV',r=>`<span class="${r.raev>=0?'pos':'neg'}">${fM(r.raev)}</span>`,'bold')+'</tbody>';
   $('t_sleeve').innerHTML=html; if($('t_sleeve2')) $('t_sleeve2').innerHTML=html;
+}
+function renderQR(m){
+  const qs=[0.10,0.25,0.40,0.55,0.75,1.00], saved=$('i_qrshare').value, rows=[];
+  qs.forEach(q=>{ $('i_qrshare').value=q; const mm=model(), y=mm.years[NY-1], b=mm.blendY(NY);
+    rows.push({qr:y.qr, rev:y.totalRev, pct:y.totalRev>0?y.qr/y.totalRev:0, ev:mm.EV,
+               raev:mm.raEV, be:mm.beYear, ratio:b.ratio, eb10:y.ebitda}); });
+  $('i_qrshare').value=saved;
+  const cur=val('i_qrshare');
+  const hi=i=>Math.abs(qs[i]-cur)<0.005?'hl':'';
+  const line=(l,fn,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+
+    rows.map((r,i)=>`<td class="${hi(i)}">${fn(r)}</td>`).join('')+'</tr>';
+  $('t_qrsens').innerHTML='<thead><tr><th>Share of spend through QR</th>'+
+    qs.map(q=>`<th>${fP(q)}</th>`).join('')+'</tr></thead><tbody>'+
+    line('Year 10 payment revenue',r=>fM(r.qr))+
+    line('Year 10 net revenue',r=>fM(r.rev))+
+    line('Payments as % of revenue',r=>fP(r.pct))+
+    line('LTV : CAC',r=>`<span class="${r.ratio>=3?'pos':'neg'}">${fX(r.ratio)}</span>`,'bold')+
+    line('Year 10 EBITDA',r=>`<span class="${r.eb10>=0?'pos':'neg'}">${fM(r.eb10)}</span>`)+
+    line('EBITDA positive',r=>r.be?'Year '+r.be:'<span class="neg">never</span>')+
+    line('ENTERPRISE VALUE',r=>`<span class="${r.ev>=0?'pos':'neg'}">${fM(r.ev)}</span>`,'bold rule')+
+    line('Risk-adjusted EV',r=>`<span class="${r.raev>=0?'pos':'neg'}">${fM(r.raev)}</span>`,'bold')+
+    '</tbody>';
 }
 function renderPnl(m){
   const Y=m.years,row=(l,c,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+c.map(x=>`<td>${x}</td>`).join('')+'</tr>';
