@@ -1,167 +1,142 @@
 # Vaulta AUM Model
 
-A standalone model for **Vaulta Invest** — the tokenized-investment product — built to answer one
-question: **does AUM fee revenue overtake the T-bill sleeve in Years 3–5?**
+A 10-year model for **Vaulta Invest** — the tokenized-investment product — built on the
+**post-pivot Vaulta-Pay-Model cost structure**. Only the revenue model differs: T-bill NIM +
+transaction fees + AUM fee.
 
-Two views of the same model:
+**▶ [Live interactive model](https://moazzamkhoja.github.io/Vaulta-AUM-Model/)** — every lever is a
+slider, all five tabs recompute live.
 
-- **▶ [Live interactive model](https://moazzamkhoja.github.io/Vaulta-AUM-Model/)** (`index.html`) —
-  every lever is a slider; charts, tables and the verdict recompute live. Push the rollover multiple
-  or the AUM fee far enough and the verdict flips to YES, which is the point of the exercise.
-- **`Vaulta_AUM_Model_v1.xlsx`** — the same model as a 9-sheet workbook, for auditing the formulas
-  cell by cell.
-
-Rebuild the workbook with `python tools/build_aum_model.py`. Both are verified: the workbook by full
-recalculation in Excel (**0 error cells**), and `index.html` by running its `model()` in Node against
-the workbook's figures — **worst difference 0.012%**.
+> **Note on `Vaulta_AUM_Model_v1.xlsx`:** that workbook is the earlier **5-year** build on the
+> pre-pivot cost structure. It has not been regenerated against the current 10-year model and its
+> numbers no longer match `index.html`. Treat `index.html` as authoritative until the workbook is
+> rebuilt.
 
 ---
 
-## The model
+## The AUM engine
 
-AUM is a **stock that accumulates**, not a balance you assume:
-
-```
-Closing AUM = Opening AUM
-            + initial rollover at signup   (new investors x wallet balance x rollover multiple)
-            + contributions                (investors x wallet balance x contribution % x 3 months)
-            - redemptions                  (opening AUM x redemption rate / 4)
-            - churn leakage                (opening AUM x quarterly churn)
-            + market return                (on opening plus half of inflows)
-
-AUM fee revenue = average AUM x AUM fee / 4
-```
-
-Run per segment, per quarter, over 20 quarters. Every lever is per segment on **Assumptions**.
-
-### Levers, per segment
-
-| Segment | CAC | Wallet balance | Monthly churn | AUM adoption | Contribution %/mo | Rollover at signup |
-|---|---|---|---|---|---|---|
-| 1 — Underbanked Active | $40 | $900 | 3.25% | 8% | 1.0% | 0.25x |
-| 2 — Dissatisfied Banked | $57.50 | $2,500 | 2.25% | 25% | 2.0% | 0.60x |
-| 3 — Primary Bank Switcher | $70 | $4,250 | 1.25% | 40% | 2.5% | 1.00x |
-| 4 — Crypto-Curious Investor | $47.50 | $6,000 | 1.50% | 70% | 3.5% | 2.00x |
-
-Adoption uses **one** mechanism: effective adoption = segment ceiling x product-availability ramp
-(0% / 45% / 70% / 90% / 100% by year). This deliberately avoids the two-conflicting-schedules
-problem in the Pay-Model.
-
-## The answer: no, and the reason is structural
-
-Set AUM fee revenue equal to NIM revenue and the user counts cancel out entirely:
+AUM is an accumulating stock, run per segment per quarter over 40 quarters:
 
 ```
-AUM x fee = balances x t-bill rate x sleeve
-AUM / balances = (0.048 x 0.20) / 0.005 = 1.92x
+Closing AUM = Opening
+            + rollover at signup   (gross new investors × rollover amount)
+            + contributions        (investors × monthly contribution × 3)
+            − redemptions          (opening × redemption rate ÷ 4)
+            − churn leakage        (opening × quarterly churn × liquidation share)
+            + market return        (on opening plus half of inflows, net of the AUM fee)
 ```
 
-**Total AUM must exceed 1.92x total wallet balances.** This is a pure ratio — it does not depend on
-how many customers Vaulta has, so growth alone never triggers the crossover.
+Gross new investors = investors this quarter − last quarter's investors surviving churn. Using net
+adds understates rollovers, because it silently nets off the investors who left — that was why AUM
+per investor previously looked flat. It now grows from ~$1,115 in Year 2 to **$2,983 by Year 10**,
+passing the ~$2,142 Acorns actually reports.
 
-| | Year 1 | Year 2 | Year 3 | Year 4 | Year 5 |
-|---|---|---|---|---|---|
-| T-bill NIM (20% sleeve) | $72,866 | $412,112 | $1,421,256 | $3,752,693 | $8,252,607 |
-| Transaction fees | $38,255 | $216,359 | $746,160 | $1,970,164 | $4,332,619 |
-| AUM fee | $0 | $41,461 | $198,105 | $682,298 | $1,695,039 |
-| Total retained revenue | $111,121 | $669,932 | $2,365,521 | $6,405,155 | $14,280,265 |
-| AUM as % of revenue | 0% | 6.2% | 8.4% | 10.7% | 11.9% |
-| **AUM / NIM** | — | **0.10x** | **0.14x** | **0.18x** | **0.21x** |
-| AUM / balances | — | 0.21x | 0.28x | 0.36x | **0.40x** |
+### Segment levers
 
-AUM reaches **0.40x** balances by Year 5 against the 1.92x needed — a **4.8x shortfall**. AUM does
-grow as a share of retained revenue (6.2% → 11.9%), but it does not overtake.
-
-### What would close the gap
-
-Year 5 AUM per investor is **$4,033** in the model. The crossover needs **$19,383**. For scale:
-
-- Acorns, the closest mass-market analogue: **$2,142** average balance
-- Betterment / Wealthfront, the primary-brokerage tier: **~$66,000**
-
-So the model is already more optimistic than Acorns, and the crossover sits about a quarter of the
-way to Betterment. **The monthly drip is not the lever** — at 1–3.5% of balance per month,
-contributions move the AUM/balance ratio by roughly `adoption x rate x months`, which is far too
-slow. The lever that moves it is the **initial rollover**: money transferred in from an existing
-bank or brokerage at signup. Vaulta Invest has to be a primary investment account, not a round-up
-feature.
-
-The second lever is price. At **0.50%** Vaulta undercuts Acorns' effective rate on a typical balance
-by roughly 3x, so there is real headroom. At 1.00% the required ratio halves to 0.96x — within
-sight of where the model already lands.
-
-## The cost of the 20/80 sleeve
-
-Handing the consumer 80% of T-bill income gives them a **3.84% effective reward rate**, which beats
-Chime's 3.75% APY (and Chime's requires $3,000/month in direct deposits). It is a genuine
-acquisition weapon. It also cuts Vaulta's NIM to 0.96% of balances, and the unit economics do not
-survive it intact:
-
-| Segment | Net contribution / mo | LTV | LTV:CAC | Payback |
+| Segment | Wallet balance | AUM adoption | Contribution $/mo | Rollover at signup |
 |---|---|---|---|---|
-| 1 — Underbanked Active | $0.61 | $13 | **0.32x** | 66 mo |
-| 2 — Dissatisfied Banked | $2.73 | $70 | **1.21x** | 21 mo |
-| 3 — Primary Bank Switcher | $5.52 | $175 | **2.50x** | 13 mo |
-| 4 — Crypto-Curious Investor | $10.50 | $315 | **6.62x** | 5 mo |
-| **Blended (Year 3 mix)** | **$2.80** | **$78** | **1.47x** | 19 mo |
+| 1 — Underbanked Active | $900 | 8% | $15 | $0 |
+| 2 — Dissatisfied Banked | $2,500 | 25% | $50 | $250 |
+| 3 — Primary Bank Switcher | $4,250 | 40% | $100 | $750 |
+| 4 — Crypto-Curious Investor | $6,000 | 70% | $200 | $2,000 |
 
-Blended LTV:CAC of 1.47x sits well under the 3x bar investors underwrite to. Segment 1 destroys
-value outright — it costs $40 to acquire a customer worth $13. A sleeve sensitivity on the
-unit-economics sheet shows the trade-off across 10%–58%.
+Contribution can be switched to a % of balance. Adoption = segment ceiling × availability ramp
+(0 / 45 / 70 / 90 / 100% by year) — one mechanism, no conflicting schedules.
 
-Note the tension: a lower sleeve makes the AUM crossover *easier* (1.92x instead of 5.57x), but it
-gets there by shrinking the NIM line rather than by growing AUM.
+## Cost structure — post-pivot (v7), unchanged
+
+Carried over from `Vaulta-Pay-Model` main (`afca2dc`): headcount by function (engineering, CS,
+leadership, legal, security, compliance), BD comp split local vs enterprise off deals-per-rep,
+brand marketing as a % of revenue (opex, not CAC), activation $ per new customer (in CAC), G&A as a
+% of revenue with a $400k floor, referrals, fixed infra, legal retainer, KYC. Regulatory capital
+($6M) is a balance-sheet raise, excluded from the P&L.
+
+**Revenue is presented net**, as in the post-pivot model: revenue is the sleeve Vaulta keeps plus
+fees plus the AUM fee. Vaulta Rewards are netted out before revenue and shown as a memo line — not
+a COGS item. COGS is variable infra only.
+
+## Results at the defaults (20/80 sleeve, 0.25% fee, 8.5% return)
+
+| | Yr 3 | Yr 5 | Yr 7 | Yr 10 |
+|---|---|---|---|---|
+| Consumers | 49,863 | 173,084 | 337,212 | 616,682 |
+| T-bill NIM | $1.14M | $3.95M | $7.70M | $14.08M |
+| Transaction fees | $597K | $2.07M | $4.04M | $7.39M |
+| AUM fee | $18K | $140K | $371K | $969K |
+| Net revenue | $1.75M | $6.16M | $12.11M | $22.43M |
+| EBITDA | −$2.56M | −$3.21M | −$3.83M | **$2.65M** |
+| AUM per investor | $1,449 | $1,852 | $2,293 | **$2,983** |
+| AUM % of net revenue | 1.0% | 2.3% | 3.1% | 4.3% |
+
+Enterprise value **−$6.7M**, EBITDA positive in **Year 9**, blended LTV:CAC **1.63x**
+(CAC $38.45, derived from the cost structure itself as BD comp + activation ÷ new consumers).
+
+## The finding: the sleeve is the dominant value lever, not AUM
+
+Each column below re-runs the whole 10-year model:
+
+| Vaulta sleeve | 10% | **20%** | 30% | 40% | 50% | 58% |
+|---|---|---|---|---|---|---|
+| Consumer effective reward | 4.32% | **3.84%** | 3.36% | 2.88% | 2.40% | 2.02% |
+| LTV : CAC | 1.02x | **1.63x** | 2.24x | 2.85x | 3.46x | 3.95x |
+| EBITDA positive | never | **Year 9** | Year 6 | Year 5 | Year 5 | Year 5 |
+| Enterprise value | −$20.5M | **−$6.7M** | +$7.1M | +$20.9M | +$34.6M | +$45.7M |
+
+At 20/80 the business does not clear this cost structure. Value turns positive at roughly a **30%**
+sleeve and LTV:CAC clears 3x at around **45–50%**. The 3.84% consumer reward is a genuine
+acquisition weapon — it beats Chime's 3.75% APY, which requires $3,000/month in direct deposits —
+but it is paid out of Vaulta's own margin, and at 20% there is not enough margin left.
+
+### Two further findings
+
+**The return assumption barely matters.** Moving it from 4% to 10.4% changes Year 10 AUM per
+investor only from $2,733 to $3,097 — about 13%. At these balance sizes contribution flow and
+leakage dominate compounding, so the 5.5%-vs-8.5% question is not where the value sits.
+
+**Rollover at signup is the real AUM lever.** Multiplying it 8x takes Year 10 AUM per investor from
+$2,983 to $7,280 and the AUM line from 4.3% to 10.1% of net revenue. The monthly drip does far less.
+
+Dropping the fee from 0.50% to 0.25% halves the AUM line and doubles the crossover hurdle from
+1.92x to 3.84x of wallet balances. It is the right competitive price — it matches Betterment Basic
+and Wealthfront — but it is the single biggest reduction to this revenue line.
 
 ## Research basis
 
-Every default is sourced on the **Research & Sources** sheet. Headlines:
+Every default is sourced on the **Research** tab. Headlines:
 
-- **AUM fee 0.50%** — Betterment Basic and Wealthfront both charge 0.25%; Acorns' flat $3/month is
-  ~1.7% of its $2,142 average balance and ~2.5% on a $1,425 balance.
-  ([unbiased.com](https://www.unbiased.com/discover/financial-advice/best-robo-advisors), [acorns.com](https://www.acorns.com/learn/investing/acorns-vs-percentage-based-apps/))
+- **AUM fee 0.25%** — Betterment Basic and Wealthfront both charge 0.25%. Acorns' flat $1–3/month is
+  ~1.7% of its $2,142 average balance.
+  ([unbiased.com](https://www.unbiased.com/discover/financial-advice/best-robo-advisors))
+- **S&P 500 return 8.5%** — historical nominal total return with dividends reinvested is ~10.4%
+  since 1957 and ~10.3–10.5% over the last 30 years; forward forecasts are 3.9–5.9% (Vanguard) and
+  ~5% (BlackRock). 8.5% sits below history, above forecast.
+  ([officialdata.org](https://www.officialdata.org/us/stocks/s-p-500) ·
+  [Fidelity](https://www.fidelity.com/learning-center/trading-investing/sp-500-average-return) ·
+  [Vanguard](https://corporate.vanguard.com/content/dam/corp/research/pdf/isg_vemo_2026.pdf))
+- **Contribution $50/mo** — Acorns reports most customers investing ~$50–60/month into core accounts.
+  ([investingintheweb.com](https://investingintheweb.com/brokers/acorn-statistics/))
 - **Reference balance $2,142** — Acorns held $30bn across 14m registered users (Jul 2026), up from
   $1,876 in 2025 and $1,439 in 2024.
-  ([investingintheweb.com](https://investingintheweb.com/brokers/acorn-statistics/))
-- **Contribution ~$50/mo for segment 2** — Acorns reports most customers investing roughly $50–60
-  per month into core accounts; modelled as a % of wallet balance so it scales with segment wealth.
-- **Contribution 1.0–3.5%/mo** — the US personal saving rate was 2.7–3.0% of income in mid-2026;
-  top-quintile earners save 15–25% while bottom-quintile saving is negative.
-  ([tradingeconomics.com](https://tradingeconomics.com/united-states/personal-saving-rate-percent-m-saar-fed-data.html))
-- **Investment return 5.5%/yr** — Vanguard's Dec-2025 10-year US equity forecast is 3.9–5.9%;
-  BlackRock's was just over 5%. Both sit well below the historical ~10%.
-  ([Vanguard VEMO 2026](https://corporate.vanguard.com/content/dam/corp/research/pdf/isg_vemo_2026.pdf), [Morningstar](https://www.morningstar.com/markets/experts-forecast-stock-bond-returns-2026-edition))
-- **Affluent ceiling ~$66,000** — Betterment ~$65bn across 1m+ clients; Wealthfront $95bn across
-  1.4m+. ([sacra.com](https://sacra.com/research/wealthfront-betterment-robo-advisor-resurrection/))
-- **The product is real** — Dinari launched 724 tokenized US stocks including the full S&P 500 for
-  US self-custody wallets, settled in USDC across 4 chains, each dShare backed 1:1 in regulated
-  custody (Aug 2026). ([CoinDesk](https://www.coindesk.com/business/2026/08/04/dinari-brings-tokenized-u-s-stocks-to-american-investors-as-equity-race-heats-up), [The Block](https://www.theblock.co/post/410588/dinari-tokenized-sp-500-stocks-self-custody-wallets-using-usdc))
+- **Affluent ceiling ~$66,000** — Betterment ~$65bn across 1m+ clients; Wealthfront $95bn across 1.4m+.
+  ([sacra.com](https://sacra.com/research/wealthfront-betterment-robo-advisor-resurrection/))
+- **The product is real** — Dinari launched 724 tokenized US stocks including the full S&P 500 for US
+  self-custody wallets, USDC-settled across 4 chains, each dShare backed 1:1 (Aug 2026).
+  ([CoinDesk](https://www.coindesk.com/business/2026/08/04/dinari-brings-tokenized-u-s-stocks-to-american-investors-as-equity-race-heats-up))
 
-**One default is not researched.** Redemption/leakage at 8%/yr is a modelling judgement — there is
-no clean public disclosure of micro-investing redemption rates. It is flagged in red on the
-Research sheet and is the weakest number in the workbook.
+**Two defaults are not sourced** and are flagged in red on the Research tab: rollover at signup, and
+redemption (8%/yr) plus churn liquidation share (100%). They are the two levers that most move AUM,
+and both are set at the conservative end.
 
-## A note on averages vs period-end
+## Tabs
 
-Revenue lines use **average** balances, because income accrues across the quarter. The crossover
-ratio uses **end-of-period** balances, because it compares two stocks (AUM against wallet balances).
-Mixing the two understates the denominator and flatters the ratio — an earlier draft of the workbook
-did exactly that and reported 0.43x instead of 0.40x.
+1. **Model** — value KPIs, AUM strip, four charts, summary by year, sleeve value-driver table
+2. **P&L & Cash** — full P&L, headcount by function, funding and cash, valuation
+3. **Unit Economics** — by segment and by year, showing the AUM line growing
+4. **AUM Deep Dive** — the engine, roll-forward, crossover algebra and sensitivity
+5. **Research** — every default with its basis and citation, plus findings
 
-## Sheets
+## Related
 
-1. **Cover** — the answer, annual revenue by line, unit economics, findings
-2. **Research & Sources** — every default with its basis and citation
-3. **Assumptions** — all levers (blue = input)
-4. **Consumer Model** — quarterly ramp by segment
-5. **AUM Engine** — the roll-forward, per segment and total
-6. **Revenue Comparison** — AUM vs NIM vs transaction fees, quarterly and annual
-7. **Crossover Analysis** — the algebra, where the model lands, what closes the gap
-8. **Segment Unit Economics** — LTV/CAC at the 20/80 sleeve, with sleeve sensitivity
-9. **Sensitivity** — AUM/balance ratio vs rollover and contribution rate; revenue vs fee rate
-
-## Relationship to the Pay-Model
-
-Separate repo, separate question. [`Vaulta-Pay-Model`](https://github.com/moazzamkhoja/Vaulta-Pay-Model)
-holds the full P&L, cash and valuation build (`rebuild-v3` branch). This repo isolates the AUM
-engine so its levers can be pushed without disturbing that model. The two share segment definitions
-and the consumer ramp but nothing else.
+[`Vaulta-Pay-Model`](https://github.com/moazzamkhoja/Vaulta-Pay-Model) holds the bill-pay model this
+cost structure comes from, plus the `rebuild-v3` branch.
