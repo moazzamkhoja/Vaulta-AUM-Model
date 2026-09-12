@@ -3,8 +3,16 @@
 A standalone model for **Vaulta Invest** — the tokenized-investment product — built to answer one
 question: **does AUM fee revenue overtake the T-bill sleeve in Years 3–5?**
 
-Deliverable: `Vaulta_AUM_Model_v1.xlsx` (9 sheets). Rebuild with `python tools/build_aum_model.py`.
-Verified by full recalculation in Excel: **0 error cells**.
+Two views of the same model:
+
+- **[`index.html`](index.html)** — interactive version. Every lever is a slider; charts, tables and
+  the verdict recompute live. Open it locally, or see the Pages link if publishing is enabled.
+- **`Vaulta_AUM_Model_v1.xlsx`** — the same model as a 9-sheet workbook, for auditing the formulas
+  cell by cell.
+
+Rebuild the workbook with `python tools/build_aum_model.py`. Both are verified: the workbook by full
+recalculation in Excel (**0 error cells**), and `index.html` by running its `model()` in Node against
+the workbook's figures — **worst difference 0.012%**.
 
 ---
 
@@ -53,17 +61,19 @@ how many customers Vaulta has, so growth alone never triggers the crossover.
 | | Year 1 | Year 2 | Year 3 | Year 4 | Year 5 |
 |---|---|---|---|---|---|
 | T-bill NIM (20% sleeve) | $72,866 | $412,112 | $1,421,256 | $3,752,693 | $8,252,607 |
-| Transaction fees | $36,433 | $206,056 | $710,628 | $1,876,347 | $4,332,619 |
+| Transaction fees | $38,255 | $216,359 | $746,160 | $1,970,164 | $4,332,619 |
 | AUM fee | $0 | $41,461 | $198,105 | $682,298 | $1,695,039 |
+| Total retained revenue | $111,121 | $669,932 | $2,365,521 | $6,405,155 | $14,280,265 |
+| AUM as % of revenue | 0% | 6.2% | 8.4% | 10.7% | 11.9% |
 | **AUM / NIM** | — | **0.10x** | **0.14x** | **0.18x** | **0.21x** |
-| AUM / balances | — | 0.24x | 0.31x | 0.40x | **0.43x** |
+| AUM / balances | — | 0.21x | 0.28x | 0.36x | **0.40x** |
 
-AUM reaches **0.43x** balances by Year 5 against the 1.92x needed — a **4.4x shortfall**. AUM does
+AUM reaches **0.40x** balances by Year 5 against the 1.92x needed — a **4.8x shortfall**. AUM does
 grow as a share of retained revenue (6.2% → 11.9%), but it does not overtake.
 
 ### What would close the gap
 
-Year 5 AUM per investor is **$4,033** in the model. The crossover needs **$17,841**. For scale:
+Year 5 AUM per investor is **$4,033** in the model. The crossover needs **$19,383**. For scale:
 
 - Acorns, the closest mass-market analogue: **$2,142** average balance
 - Betterment / Wealthfront, the primary-brokerage tier: **~$66,000**
@@ -128,6 +138,13 @@ Every default is sourced on the **Research & Sources** sheet. Headlines:
 **One default is not researched.** Redemption/leakage at 8%/yr is a modelling judgement — there is
 no clean public disclosure of micro-investing redemption rates. It is flagged in red on the
 Research sheet and is the weakest number in the workbook.
+
+## A note on averages vs period-end
+
+Revenue lines use **average** balances, because income accrues across the quarter. The crossover
+ratio uses **end-of-period** balances, because it compares two stocks (AUM against wallet balances).
+Mixing the two understates the denominator and flatters the ratio — an earlier draft of the workbook
+did exactly that and reported 0.43x instead of 0.40x.
 
 ## Sheets
 

@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vaulta — AUM Model</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --navy:#1F4E79; --blue:#2E75B6; --ltblue:#BDD7EE; --green:#70AD47;
+    --orange:#ED7D31; --grey:#D9E1F2; --dgrey:#595959; --bg:#f0f4f8;
+    --card:#ffffff; --red:#C00000;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:#222; font-size:13px; }
+
+  header { background:var(--navy); color:#fff; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; }
+  header h1 { font-size:18px; font-weight:700; letter-spacing:.5px; }
+  header span { font-size:11px; opacity:.75; }
+
+  .tab-bar { background:var(--navy); padding:0 24px; display:flex; gap:4px; border-top:1px solid rgba(255,255,255,.1); }
+  .tab-btn { padding:8px 20px; font-size:12px; font-weight:600; color:rgba(255,255,255,.55);
+             border:none; background:transparent; cursor:pointer; border-bottom:3px solid transparent; letter-spacing:.4px; }
+  .tab-btn.active { color:#fff; border-bottom-color:#4fc3f7; }
+  .tab-btn:hover { color:rgba(255,255,255,.85); }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  .layout { display:grid; grid-template-columns:310px 1fr; min-height:calc(100vh - 84px); }
+  .sidebar { background:#1a3a5c; color:#fff; padding:14px 13px; overflow-y:auto; max-height:calc(100vh - 84px); }
+  .sidebar h3 { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:#7fb3d3; margin:14px 0 7px; }
+  .sidebar h3:first-child { margin-top:0; }
+  .slider-row { margin-bottom:10px; }
+  .slider-row label { display:flex; justify-content:space-between; font-size:11px; color:#c8dff0; margin-bottom:3px; }
+  .slider-row label span { color:#fff; font-weight:600; font-size:12px; }
+  .hint { font-size:9px; color:#7fb3d3; margin-top:1px; line-height:1.35; }
+  input[type=range] { width:100%; accent-color:#4fc3f7; height:4px; cursor:pointer; }
+  hr.div { border:none; border-top:1px solid rgba(255,255,255,.1); margin:10px 0; }
+
+  .segbox { background:rgba(255,255,255,.06); border-radius:6px; padding:8px; margin-bottom:8px; }
+  .segbox .segname { font-size:10px; font-weight:700; color:#4fc3f7; margin-bottom:6px; }
+  .segrow { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:10px; color:#c8dff0; }
+  .segrow input[type=number] { width:72px; background:rgba(255,255,255,.1); border:1px solid #4fc3f7; border-radius:4px;
+                               color:#fff; font-size:10px; font-weight:600; text-align:right; padding:2px 4px; outline:none; }
+
+  .main { padding:14px; overflow-y:auto; max-height:calc(100vh - 84px); }
+  .kpi-row { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:12px; }
+  .kpi { background:var(--card); border-radius:8px; padding:11px 12px; border-top:3px solid var(--blue); box-shadow:0 1px 4px rgba(0,0,0,.07); }
+  .kpi.navy { border-top-color:var(--navy); background:var(--navy); color:#fff; }
+  .kpi.green { border-top-color:var(--green); }
+  .kpi.red { border-top-color:var(--red); }
+  .kpi.orange { border-top-color:var(--orange); }
+  .kpi-label { font-size:9px; color:var(--dgrey); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
+  .kpi.navy .kpi-label { color:#adc8e0; }
+  .kpi-value { font-size:19px; font-weight:700; color:var(--navy); line-height:1.05; }
+  .kpi.navy .kpi-value { color:#fff; }
+  .kpi.green .kpi-value { color:var(--green); }
+  .kpi.red .kpi-value { color:var(--red); }
+  .kpi.orange .kpi-value { color:var(--orange); }
+  .kpi-sub { font-size:9px; color:var(--dgrey); margin-top:3px; }
+  .kpi.navy .kpi-sub { color:#adc8e0; }
+
+  .charts-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+  .chart-card { background:var(--card); border-radius:8px; padding:13px; box-shadow:0 1px 4px rgba(0,0,0,.07); }
+  .chart-card h4 { font-size:10px; color:var(--navy); font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:9px; }
+  .chart-card canvas { max-height:230px; }
+
+  .table-card { background:var(--card); border-radius:8px; padding:13px; box-shadow:0 1px 4px rgba(0,0,0,.07); margin-bottom:12px; }
+  .table-card h4 { font-size:10px; color:var(--navy); font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:9px; }
+  table { width:100%; border-collapse:collapse; font-size:11px; }
+  th { background:var(--grey); color:var(--navy); font-weight:700; padding:5px 8px; text-align:right; }
+  th:first-child { text-align:left; }
+  td { padding:5px 8px; border-bottom:1px solid #eef0f4; text-align:right; }
+  td:first-child { text-align:left; }
+  tr:last-child td { border-bottom:none; }
+  .pos { color:var(--green); font-weight:600; }
+  .neg { color:var(--red); font-weight:600; }
+  .bold { font-weight:700; }
+  .hl { background:#eef5fd; }
+
+  .verdict { border-radius:8px; padding:14px 16px; margin-bottom:12px; font-size:13px; line-height:1.5; }
+  .verdict.no  { background:#fdecea; border-left:5px solid var(--red); }
+  .verdict.yes { background:#eaf6ec; border-left:5px solid var(--green); }
+  .verdict b { font-size:15px; }
+
+  .content { padding:18px 24px; }
+  .content h2 { font-size:15px; color:var(--navy); margin-bottom:4px; }
+  .content .sub { font-size:11px; color:var(--dgrey); margin-bottom:16px; }
+  .sec { margin-bottom:24px; }
+  .sec h3 { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--blue);
+            margin-bottom:10px; border-bottom:2px solid var(--ltblue); padding-bottom:5px; }
+  .formula { background:#0f2b45; color:#9fe6ff; font-family:Consolas,monospace; font-size:12px;
+             padding:12px 14px; border-radius:6px; margin:10px 0; line-height:1.7; overflow-x:auto; }
+  .note { font-size:10px; color:#888; font-style:italic; margin-top:6px; }
+  .src { font-size:10px; color:var(--blue); }
+  .src a { color:var(--blue); }
+  ul.find { list-style:none; }
+  ul.find li { padding:7px 0 7px 18px; position:relative; font-size:12px; line-height:1.5; border-bottom:1px solid #eef0f4; }
+  ul.find li:before { content:"▸"; position:absolute; left:0; color:var(--blue); }
+  ul.find li.warn { color:var(--red); font-weight:600; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Vaulta — AUM Model</h1>
+  <span>Does tokenized-investment AUM overtake the T-bill sleeve? — drag any lever, everything recomputes</span>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="model">📊 Model</button>
+  <button class="tab-btn" data-tab="crossover">🔀 Crossover</button>
+  <button class="tab-btn" data-tab="unit">📐 Unit Economics</button>
+  <button class="tab-btn" data-tab="research">📚 Research &amp; Sources</button>
+</div>
+
+<!-- ══════════ MODEL TAB ══════════ -->
+<div id="tab-model" class="tab-panel active">
+<div class="layout">
+  <div class="sidebar">
+    <h3>T-Bill Sleeve</h3>
+    <div class="slider-row">
+      <label>T-Bill Annual Rate <span id="l_tbill">4.80%</span></label>
+      <input type="range" id="i_tbill" min="0.01" max="0.10" step="0.001" value="0.048">
+    </div>
+    <div class="slider-row">
+      <label>Vaulta Sleeve (keeps) <span id="l_sleeve">20%</span></label>
+      <div class="hint">Consumer gets the rest as the reward. At 20% the consumer's effective rate is <b id="l_effrwd">3.84%</b> — Chime pays 3.75% APY and requires $3k/mo direct deposits.</div>
+      <input type="range" id="i_sleeve" min="0.05" max="0.80" step="0.01" value="0.20">
+    </div>
+
+    <hr class="div">
+    <h3>Vaulta Invest</h3>
+    <div class="slider-row">
+      <label>AUM Fee (annual) <span id="l_aumfee">0.50%</span></label>
+      <div class="hint">Betterment &amp; Wealthfront charge 0.25%. Acorns' flat $3/mo is ~1.7% of its $2,142 average balance.</div>
+      <input type="range" id="i_aumfee" min="0.001" max="0.020" step="0.00025" value="0.005">
+    </div>
+    <div class="slider-row">
+      <label>Expected Investment Return <span id="l_mktret">5.5%</span></label>
+      <div class="hint">Vanguard 10-yr US equity 3.9–5.9%; BlackRock ~5%.</div>
+      <input type="range" id="i_mktret" min="0.00" max="0.12" step="0.005" value="0.055">
+    </div>
+    <div class="slider-row">
+      <label>Redemption / Leakage <span id="l_redeem">8.0%</span></label>
+      <div class="hint">Modelling judgement — not a researched figure. Weakest input here.</div>
+      <input type="range" id="i_redeem" min="0.00" max="0.30" step="0.01" value="0.08">
+    </div>
+
+    <hr class="div">
+    <h3>Segment Levers</h3>
+    <div class="hint" style="margin-bottom:8px">Balance ($), AUM adoption ceiling (%), monthly contribution (% of balance), rollover at signup (× balance).</div>
+    <div id="segboxes"></div>
+
+    <hr class="div">
+    <h3>Growth</h3>
+    <div class="slider-row">
+      <label>Year-5 Active Consumers <span id="l_y5">500K</span></label>
+      <input type="range" id="i_y5" min="50000" max="2000000" step="50000" value="500000">
+    </div>
+    <div class="slider-row">
+      <label>Availability Ramp — Year 2 <span id="l_ramp2">45%</span></label>
+      <div class="hint">Scales every segment's adoption ceiling while the product is rolling out.</div>
+      <input type="range" id="i_ramp2" min="0" max="1" step="0.05" value="0.45">
+    </div>
+  </div>
+
+  <div class="main">
+    <div id="verdict" class="verdict no"></div>
+
+    <div class="kpi-row">
+      <div class="kpi navy">
+        <div class="kpi-label">Year 5 Total AUM</div>
+        <div class="kpi-value" id="k_aum">—</div>
+        <div class="kpi-sub" id="k_aum_sub">closing balance</div>
+      </div>
+      <div class="kpi navy">
+        <div class="kpi-label">Year 5 AUM Fee Revenue</div>
+        <div class="kpi-value" id="k_fee">—</div>
+        <div class="kpi-sub">annual</div>
+      </div>
+      <div class="kpi" id="k_ratio_card">
+        <div class="kpi-label">AUM ÷ T-Bill NIM (Yr 5)</div>
+        <div class="kpi-value" id="k_ratio">—</div>
+        <div class="kpi-sub">needs &gt; 1.00x to overtake</div>
+      </div>
+      <div class="kpi orange">
+        <div class="kpi-label">AUM ÷ Wallet Balances</div>
+        <div class="kpi-value" id="k_cover">—</div>
+        <div class="kpi-sub" id="k_cover_sub">vs required</div>
+      </div>
+      <div class="kpi" id="k_ltv_card">
+        <div class="kpi-label">Blended LTV : CAC (Yr 3)</div>
+        <div class="kpi-value" id="k_ltv">—</div>
+        <div class="kpi-sub">target ≥ 3.0x</div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <h4>Vaulta Retained Revenue by Line ($M / year)</h4>
+        <canvas id="ch_rev"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4>Total AUM vs Total Wallet Balances ($M)</h4>
+        <canvas id="ch_aum"></canvas>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <h4>Annual Summary — what Vaulta keeps</h4>
+      <table id="t_annual"></table>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ CROSSOVER TAB ══════════ -->
+<div id="tab-crossover" class="tab-panel">
+  <div class="content">
+    <h2>Crossover Analysis</h2>
+    <p class="sub">What would it actually take for AUM fee revenue to overtake the T-bill sleeve?</p>
+
+    <div class="sec">
+      <h3>The algebra</h3>
+      <p>Set the two revenue lines equal and the customer count cancels out of both sides:</p>
+      <div class="formula" id="f_algebra"></div>
+      <p style="font-size:12px">Total AUM must exceed <b id="x_req">—</b> times total wallet balances. This is a
+      <b>pure ratio</b> — it has no user count in it, so growing the customer base moves both sides equally and
+      <b>never triggers the crossover</b>.</p>
+    </div>
+
+    <div class="sec">
+      <h3>Where the model lands</h3>
+      <table id="t_cross"></table>
+    </div>
+
+    <div class="sec">
+      <h3>What would close the gap</h3>
+      <table id="t_gap"></table>
+      <p class="note">The monthly drip moves the ratio by roughly (adoption × contribution rate × months) — far too slowly.
+      The initial rollover at signup is the lever that matters.</p>
+    </div>
+
+    <div class="sec">
+      <h3>Required AUM ÷ balances, by sleeve and fee</h3>
+      <table id="t_sens"></table>
+      <p class="note">A lower sleeve makes the crossover easier — but by shrinking the NIM line, not by growing AUM.
+      Highlighted cell is the current setting.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ UNIT ECONOMICS TAB ══════════ -->
+<div id="tab-unit" class="tab-panel">
+  <div class="content">
+    <h2>Segment Unit Economics</h2>
+    <p class="sub">At the current sleeve, including the AUM fee on accumulated Year-5 balances. LTV discounted at 15% WACC over 60 months.</p>
+    <div class="sec">
+      <table id="t_unit"></table>
+    </div>
+    <div class="sec">
+      <h3>Sleeve sensitivity — blended Year-3 LTV : CAC</h3>
+      <table id="t_sleeve"></table>
+      <p class="note">The sleeve is the single biggest driver of consumer unit economics.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ RESEARCH TAB ══════════ -->
+<div id="tab-research" class="tab-panel">
+  <div class="content">
+    <h2>Research &amp; Sources</h2>
+    <p class="sub">Basis for every default. Researched September 2026.</p>
+    <div class="sec"><table id="t_research"></table></div>
+    <div class="sec">
+      <h3>Findings</h3>
+      <ul class="find" id="t_find"></ul>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── segment definitions ───────────────────────────────────────────────────
+const SEG = [
+  { name:"1 — Underbanked Active",      cac:40.00, bal:900,  churn:0.0325, adopt:0.08, contrib:0.010, roll:0.25 },
+  { name:"2 — Dissatisfied Banked",     cac:57.50, bal:2500, churn:0.0225, adopt:0.25, contrib:0.020, roll:0.60 },
+  { name:"3 — Primary Bank Switcher",   cac:70.00, bal:4250, churn:0.0125, adopt:0.40, contrib:0.025, roll:1.00 },
+  { name:"4 — Crypto-Curious Investor", cac:47.50, bal:6000, churn:0.0150, adopt:0.70, contrib:0.035, roll:2.00 }
+];
+const MIX = [
+  [0.60, 0.475, 0.35, 0.35, 0.35],
+  [0.30, 0.375, 0.45, 0.45, 0.45],
+  [0.00, 0.075, 0.15, 0.15, 0.15],
+  [0.10, 0.075, 0.05, 0.05, 0.05]
+];
+const NQ = 20, Q0 = 1000;
+// fixed context levers (match the workbook)
+const SPEND = 0.20, QRS = 0.40, QRF = 0.005, RIN = 0.0035, RCT = 0.15, TKT = 45, INFRA = 0.50;
+const WACC = 0.15, HORIZON = 60;
+
+// ── formatting ────────────────────────────────────────────────────────────
+const fM  = v => (Math.abs(v) >= 1e9) ? '$'+(v/1e9).toFixed(2)+'B'
+               : (Math.abs(v) >= 1e6) ? '$'+(v/1e6).toFixed(1)+'M'
+               : (Math.abs(v) >= 1e3) ? '$'+(v/1e3).toFixed(0)+'K' : '$'+v.toFixed(0);
+const fD  = v => '$'+v.toLocaleString(undefined,{maximumFractionDigits:0});
+const fD2 = v => '$'+v.toFixed(2);
+const fP  = v => (v*100).toFixed(1)+'%';
+const fP2 = v => (v*100).toFixed(2)+'%';
+const fX  = v => v.toFixed(2)+'x';
+const fN  = v => Math.round(v).toLocaleString();
+
+const $ = id => document.getElementById(id);
+const val = id => +$(id).value;
+
+// ── build segment input boxes ─────────────────────────────────────────────
+$('segboxes').innerHTML = SEG.map((s,i) => `
+  <div class="segbox">
+    <div class="segname">${s.name}</div>
+    <div class="segrow"><span>Wallet balance</span><input type="number" id="s${i}_bal" value="${s.bal}" min="0" step="50"></div>
+    <div class="segrow"><span>AUM adoption %</span><input type="number" id="s${i}_adopt" value="${(s.adopt*100).toFixed(0)}" min="0" max="100" step="1"></div>
+    <div class="segrow"><span>Contribution %/mo</span><input type="number" id="s${i}_contrib" value="${(s.contrib*100).toFixed(1)}" min="0" max="50" step="0.1"></div>
+    <div class="segrow"><span>Rollover ×balance</span><input type="number" id="s${i}_roll" value="${s.roll}" min="0" max="50" step="0.25"></div>
+  </div>`).join('');
+
+function readSegs() {
+  return SEG.map((s,i) => ({
+    name: s.name, cac: s.cac, churn: s.churn,
+    bal:     val(`s${i}_bal`),
+    adopt:   val(`s${i}_adopt`)/100,
+    contrib: val(`s${i}_contrib`)/100,
+    roll:    val(`s${i}_roll`)
+  }));
+}
+
+// ── the model ─────────────────────────────────────────────────────────────
+function model() {
+  const tbill = val('i_tbill'), sleeve = val('i_sleeve'), aumFee = val('i_aumfee');
+  const mktRet = val('i_mktret'), redeem = val('i_redeem');
+  const y5 = val('i_y5'), ramp2 = val('i_ramp2');
+  const segs = readSegs();
+
+  // year-end consumer targets scaled off the Year-5 lever
+  const shape = [0.02, 0.07, 0.20, 0.50, 1.00];
+  const yearEnd = shape.map(s => Math.round(s * y5));
+  const ramp = [0, ramp2, Math.min(1, ramp2 + 0.25), Math.min(1, ramp2 + 0.45), 1.00];
+
+  const yearOf = q => Math.floor((q-1)/4) + 1;
+  const blended = (yr, fn) => segs.reduce((a,s,i) => a + fn(s) * MIX[i][yr-1], 0);
+
+  // consumer ramp
+  const eop = [], bop = [], avg = [];
+  for (let q = 1; q <= NQ; q++) {
+    const yr = yearOf(q), qin = q - (yr-1)*4;
+    const prior = yr === 1 ? Q0 : yearEnd[yr-2];
+    eop[q] = prior * Math.pow(yearEnd[yr-1]/prior, qin/4);
+    bop[q] = q === 1 ? Q0 : eop[q-1];
+    avg[q] = (bop[q] + eop[q]) / 2;
+  }
+
+  // AUM roll-forward, per segment
+  const segAUM = segs.map(() => ({ users:[], open:[], close:[], avg:[] }));
+  const qRet = Math.pow(1 + mktRet, 0.25) - 1;
+  for (let i = 0; i < segs.length; i++) {
+    const s = segs[i], S = segAUM[i];
+    const qChurn = 1 - Math.pow(1 - s.churn, 3);
+    for (let q = 1; q <= NQ; q++) {
+      const yr = yearOf(q);
+      const segActives = eop[q] * MIX[i][yr-1];
+      S.users[q] = segActives * s.adopt * ramp[yr-1];
+      const newU = q === 1 ? S.users[1] : Math.max(0, S.users[q] - S.users[q-1]);
+      const open = q === 1 ? 0 : S.close[q-1];
+      const rollIn = newU * s.bal * s.roll;
+      const contrib = S.users[q] * s.bal * s.contrib * 3;
+      const red = -open * redeem / 4;
+      const leak = -open * qChurn;
+      const ret = (open + (rollIn + contrib)/2) * qRet;
+      S.open[q] = open;
+      S.close[q] = open + rollIn + contrib + red + leak + ret;
+      S.avg[q] = (open + S.close[q]) / 2;
+    }
+  }
+
+  // revenue per quarter
+  const Q = [];
+  for (let q = 1; q <= NQ; q++) {
+    const yr = yearOf(q);
+    const bal = blended(yr, s => s.bal);
+    const totalBalAvg = avg[q] * bal;
+    const totalBalEop = eop[q] * bal;
+    const tbGross = totalBalAvg * tbill / 4;
+    const nim = tbGross * sleeve;
+    const spend = totalBalAvg * SPEND * 3;
+    const qrFee = spend * QRS * QRF;
+    const cardVol = spend * (1 - QRS);
+    const rainNet = cardVol * RIN - (cardVol / TKT) * RCT;
+    const aumAvg = segAUM.reduce((a,S) => a + S.avg[q], 0);
+    const aumClose = segAUM.reduce((a,S) => a + S.close[q], 0);
+    const users = segAUM.reduce((a,S) => a + S.users[q], 0);
+    const fee = aumAvg * aumFee / 4;
+    Q.push({ q, yr, nim, txn: qrFee + rainNet, fee, aumClose, users,
+             total: nim + qrFee + rainNet + fee, totalBalEop, totalBalAvg });
+  }
+
+  // annual roll-up
+  const ann = [];
+  for (let y = 1; y <= 5; y++) {
+    const qs = Q.filter(x => x.yr === y);
+    const last = qs[qs.length - 1];
+    ann.push({
+      y,
+      nim:   qs.reduce((a,x) => a + x.nim, 0),
+      txn:   qs.reduce((a,x) => a + x.txn, 0),
+      fee:   qs.reduce((a,x) => a + x.fee, 0),
+      total: qs.reduce((a,x) => a + x.total, 0),
+      aum:   last.aumClose,
+      bal:   last.totalBalEop,
+      users: last.users,
+      actives: eop[y*4]
+    });
+  }
+  ann.forEach(a => {
+    a.ratio = a.nim > 0 ? a.fee / a.nim : 0;
+    a.share = a.total > 0 ? a.fee / a.total : 0;
+    a.cover = a.bal > 0 ? a.aum / a.bal : 0;
+  });
+
+  // unit economics
+  const mdisc = Math.pow(1 + WACC, 1/12) - 1;
+  const aumPerUser = segAUM.map(S => S.users[NQ] > 0 ? S.close[NQ] / S.users[NQ] : 0);
+  const ue = segs.map((s,i) => {
+    const nim = s.bal * tbill * sleeve / 12;
+    const spend = s.bal * SPEND;
+    const qr = spend * QRS * QRF;
+    const cardVol = spend * (1 - QRS);
+    const rain = cardVol * RIN - (cardVol / TKT) * RCT;
+    const afee = aumPerUser[i] * s.adopt * aumFee / 12;
+    const net = nim + qr + rain + afee - INFRA;
+    const d = (1 - s.churn) / (1 + mdisc);
+    const ltv = net / (1 + mdisc) * (1 - Math.pow(d, HORIZON)) / (1 - d);
+    return { name:s.name, cac:s.cac, bal:s.bal, churn:s.churn, adopt:s.adopt,
+             aumPer:aumPerUser[i], nim, qr, rain, afee, net, ltv,
+             ratio: ltv / s.cac, payback: net > 0 ? s.cac / net : Infinity };
+  });
+  const blendUE = yr => {
+    const w = i => MIX[i][yr-1];
+    const cac = ue.reduce((a,u,i) => a + u.cac * w(i), 0);
+    const ltv = ue.reduce((a,u,i) => a + u.ltv * w(i), 0);
+    const net = ue.reduce((a,u,i) => a + u.net * w(i), 0);
+    return { cac, ltv, net, ratio: ltv / cac };
+  };
+
+  const required = (tbill * sleeve) / aumFee;
+  return { Q, ann, ue, blendUE, required, tbill, sleeve, aumFee, mktRet, redeem, aumPerUser, segAUM, eop };
+}
+
+// ── rendering ─────────────────────────────────────────────────────────────
+let chRev = null, chAum = null;
+
+function render() {
+  // labels
+  $('l_tbill').textContent  = fP2(val('i_tbill'));
+  $('l_sleeve').textContent = fP(val('i_sleeve'));
+  $('l_effrwd').textContent = fP2(val('i_tbill') * (1 - val('i_sleeve')));
+  $('l_aumfee').textContent = fP2(val('i_aumfee'));
+  $('l_mktret').textContent = fP(val('i_mktret'));
+  $('l_redeem').textContent = fP(val('i_redeem'));
+  $('l_y5').textContent     = (val('i_y5')/1000).toFixed(0)+'K';
+  $('l_ramp2').textContent  = fP(val('i_ramp2'));
+
+  const m = model();
+  const y5 = m.ann[4];
+
+  // verdict
+  const overtakes = y5.fee > y5.nim;
+  const crossYear = m.ann.find(a => a.fee > a.nim);
+  const v = $('verdict');
+  v.className = 'verdict ' + (overtakes ? 'yes' : 'no');
+  v.innerHTML = overtakes
+    ? `<b>YES — AUM overtakes the T-bill sleeve in Year ${crossYear.y}.</b><br>
+       At these settings AUM reaches ${fX(y5.cover)} of wallet balances against the ${fX(m.required)} required.
+       Year 5 AUM fee revenue is ${fM(y5.fee)} versus ${fM(y5.nim)} of NIM.`
+    : `<b>NO — AUM does not overtake the T-bill sleeve by Year 5.</b><br>
+       The crossover needs total AUM to reach <b>${fX(m.required)}</b> of total wallet balances; this model reaches
+       <b>${fX(y5.cover)}</b> — a <b>${fX(m.required / (y5.cover || 1e-9))}</b> shortfall. Year 5 AUM fee revenue is
+       ${fM(y5.fee)} against ${fM(y5.nim)} of NIM (${fX(y5.ratio)}). The ratio has no user count in it, so growth alone never closes it.`;
+
+  // KPIs
+  $('k_aum').textContent = fM(y5.aum);
+  $('k_aum_sub').textContent = fN(y5.users) + ' investors · ' + fM(y5.users ? y5.aum/y5.users : 0) + ' each';
+  $('k_fee').textContent = fM(y5.fee);
+  $('k_ratio').textContent = fX(y5.ratio);
+  $('k_ratio_card').className = 'kpi ' + (y5.ratio >= 1 ? 'green' : y5.ratio >= 0.5 ? 'orange' : 'red');
+  $('k_cover').textContent = fX(y5.cover);
+  $('k_cover_sub').textContent = 'needs ' + fX(m.required);
+  const b3 = m.blendUE(3);
+  $('k_ltv').textContent = fX(b3.ratio);
+  $('k_ltv_card').className = 'kpi ' + (b3.ratio >= 3 ? 'green' : b3.ratio >= 2 ? 'orange' : 'red');
+
+  // annual table
+  $('t_annual').innerHTML =
+    '<thead><tr><th>Line</th>' + m.ann.map(a => `<th>Year ${a.y}</th>`).join('') + '</tr></thead><tbody>' +
+    row('Year-end active consumers', m.ann.map(a => fN(a.actives))) +
+    row('T-bill NIM (Vaulta keeps)', m.ann.map(a => fM(a.nim)), 'bold') +
+    row('Transaction fees', m.ann.map(a => fM(a.txn))) +
+    row('AUM fee', m.ann.map(a => fM(a.fee)), 'bold hl') +
+    row('Total retained revenue', m.ann.map(a => fM(a.total)), 'bold') +
+    row('AUM as % of revenue', m.ann.map(a => fP(a.share))) +
+    row('AUM ÷ NIM', m.ann.map(a => fX(a.ratio)), 'bold hl') +
+    row('Overtakes NIM?', m.ann.map(a => a.fee > a.nim
+        ? '<span class="pos">YES</span>' : '<span class="neg">no</span>')) +
+    row('Closing AUM', m.ann.map(a => fM(a.aum))) +
+    row('Total wallet balances', m.ann.map(a => fM(a.bal))) +
+    '</tbody>';
+
+  // charts
+  const labels = m.ann.map(a => 'Year ' + a.y);
+  if (chRev) chRev.destroy();
+  chRev = new Chart($('ch_rev'), {
+    type:'bar',
+    data:{ labels, datasets:[
+      { label:'T-bill NIM', data:m.ann.map(a=>+(a.nim/1e6).toFixed(3)), backgroundColor:'rgba(31,78,121,.85)' },
+      { label:'Transaction fees', data:m.ann.map(a=>+(a.txn/1e6).toFixed(3)), backgroundColor:'rgba(46,117,182,.7)' },
+      { label:'AUM fee', data:m.ann.map(a=>+(a.fee/1e6).toFixed(3)), backgroundColor:'rgba(112,173,71,.9)' }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:true,
+      plugins:{ legend:{position:'top',labels:{font:{size:10},boxWidth:12}},
+                tooltip:{callbacks:{label:c=>' '+c.dataset.label+': $'+c.parsed.y.toFixed(2)+'M'}} },
+      scales:{ x:{stacked:true,ticks:{font:{size:9}}},
+               y:{stacked:true,ticks:{callback:v=>'$'+v+'M',font:{size:9}},grid:{color:'#eee'}} } }
+  });
+
+  if (chAum) chAum.destroy();
+  chAum = new Chart($('ch_aum'), {
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'Total wallet balances', data:m.ann.map(a=>+(a.bal/1e6).toFixed(1)),
+        borderColor:'#1F4E79', backgroundColor:'rgba(31,78,121,.08)', fill:true, tension:.3 },
+      { label:'Total AUM', data:m.ann.map(a=>+(a.aum/1e6).toFixed(1)),
+        borderColor:'#70AD47', backgroundColor:'rgba(112,173,71,.12)', fill:true, tension:.3 },
+      { label:'AUM needed to overtake', data:m.ann.map(a=>+((a.bal*m.required)/1e6).toFixed(1)),
+        borderColor:'#C00000', borderDash:[6,4], fill:false, pointRadius:0, tension:.3 }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:true,
+      plugins:{ legend:{position:'top',labels:{font:{size:10},boxWidth:12}},
+                tooltip:{callbacks:{label:c=>' '+c.dataset.label+': $'+c.parsed.y.toFixed(0)+'M'}} },
+      scales:{ y:{ticks:{callback:v=>'$'+v+'M',font:{size:9}},grid:{color:'#eee'}}, x:{ticks:{font:{size:9}}} } }
+  });
+
+  renderCrossover(m);
+  renderUnit(m);
+}
+
+function row(label, cells, cls) {
+  return `<tr class="${cls||''}"><td>${label}</td>` + cells.map(c=>`<td>${c}</td>`).join('') + '</tr>';
+}
+
+function renderCrossover(m) {
+  $('f_algebra').textContent =
+    'AUM × fee  =  balances × t-bill rate × sleeve\n' +
+    'AUM ÷ balances  =  (' + fP2(m.tbill) + ' × ' + fP(m.sleeve) + ') ÷ ' + fP2(m.aumFee) +
+    '  =  ' + fX(m.required);
+  $('x_req').textContent = fX(m.required);
+
+  $('t_cross').innerHTML =
+    '<thead><tr><th>Metric</th>' + m.ann.map(a=>`<th>Year ${a.y}</th>`).join('') + '</tr></thead><tbody>' +
+    row('Total AUM (year end)', m.ann.map(a=>fM(a.aum))) +
+    row('Total wallet balances', m.ann.map(a=>fM(a.bal))) +
+    row('Actual AUM ÷ balances', m.ann.map(a=>fX(a.cover)), 'bold hl') +
+    row('Required ratio', m.ann.map(()=>fX(m.required))) +
+    row('Shortfall', m.ann.map(a=>a.cover>0
+        ? '<span class="neg">'+fX(m.required/a.cover)+'</span>' : '—'), 'bold') +
+    '</tbody>';
+
+  const y5 = m.ann[4];
+  const reqPer = y5.users > 0 ? (m.required * y5.bal) / y5.users : 0;
+  const actPer = y5.users > 0 ? y5.aum / y5.users : 0;
+  $('t_gap').innerHTML =
+    '<thead><tr><th>Measure</th><th>Value</th><th>Reference</th></tr></thead><tbody>' +
+    `<tr><td>Year 5 investors</td><td>${fN(y5.users)}</td><td class="src">—</td></tr>` +
+    `<tr><td>Year 5 AUM per investor (model)</td><td class="bold">${fD(actPer)}</td><td class="src">Acorns averages $2,142</td></tr>` +
+    `<tr class="hl"><td>AUM per investor <b>required</b></td><td class="bold">${fD(reqPer)}</td><td class="src">Betterment / Wealthfront ~$66,000</td></tr>` +
+    `<tr><td>Multiple needed</td><td class="bold neg">${actPer>0?fX(reqPer/actPer):'—'}</td><td class="src">gap to close</td></tr>` +
+    '</tbody>';
+
+  const sleeves = [0.10, 0.20, 0.35, 0.50, 0.58];
+  const fees = [0.0025, 0.0050, 0.0075, 0.0100, 0.0150];
+  let h = '<thead><tr><th>AUM fee \\ sleeve</th>' + sleeves.map(s=>`<th>${fP(s)}</th>`).join('') + '</tr></thead><tbody>';
+  fees.forEach(f => {
+    h += `<tr><td class="bold">${fP2(f)}</td>` + sleeves.map(s => {
+      const req = m.tbill * s / f;
+      const near = Math.abs(f - m.aumFee) < 0.0003 && Math.abs(s - m.sleeve) < 0.01;
+      return `<td class="${near?'hl bold':''}">${fX(req)}</td>`;
+    }).join('') + '</tr>';
+  });
+  $('t_sens').innerHTML = h + '</tbody>';
+}
+
+function renderUnit(m) {
+  let h = '<thead><tr><th>Metric</th>' + m.ue.map(u=>`<th>${u.name}</th>`).join('') +
+          '<th>Blended Y1</th><th>Blended Y3</th></tr></thead><tbody>';
+  const b1 = m.blendUE(1), b3 = m.blendUE(3);
+  const r = (lbl, f, b1v, b3v, cls) =>
+    `<tr class="${cls||''}"><td>${lbl}</td>` + m.ue.map(u=>`<td>${f(u)}</td>`).join('') +
+    `<td>${b1v}</td><td>${b3v}</td></tr>`;
+  h += r('CAC', u=>fD2(u.cac), fD2(b1.cac), fD2(b3.cac));
+  h += r('Wallet balance', u=>fD(u.bal), '—', '—');
+  h += r('Monthly churn', u=>fP2(u.churn), '—', '—');
+  h += r('AUM adoption', u=>fP(u.adopt), '—', '—');
+  h += r('AUM per investor (Yr 5)', u=>fD(u.aumPer), '—', '—');
+  h += r('T-bill NIM / month', u=>fD2(u.nim), '—', '—');
+  h += r('QR merchant fee / month', u=>fD2(u.qr), '—', '—');
+  h += r('Card interchange net / month', u=>fD2(u.rain), '—', '—');
+  h += r('AUM fee / month', u=>fD2(u.afee), '—', '—');
+  h += r('Infra / month', ()=>fD2(-INFRA), '—', '—');
+  h += r('Net contribution / month', u=>fD2(u.net), fD2(b1.net), fD2(b3.net), 'bold hl');
+  h += r('Discounted LTV', u=>fD(u.ltv), fD(b1.ltv), fD(b3.ltv), 'bold');
+  h += r('LTV : CAC', u=>`<span class="${u.ratio>=3?'pos':'neg'}">${fX(u.ratio)}</span>`,
+         `<span class="${b1.ratio>=3?'pos':'neg'}">${fX(b1.ratio)}</span>`,
+         `<span class="${b3.ratio>=3?'pos':'neg'}">${fX(b3.ratio)}</span>`, 'bold hl');
+  h += r('CAC payback (months)', u=>isFinite(u.payback)?u.payback.toFixed(1):'n/a', '—', '—');
+  h += r('AUM share of contribution', u=>fP(u.net!==0?u.afee/u.net:0), '—', '—');
+  $('t_unit').innerHTML = h + '</tbody>';
+
+  // sleeve sensitivity on blended Y3 LTV:CAC
+  const sleeves = [0.10, 0.20, 0.35, 0.50, 0.58, 0.70];
+  const saved = $('i_sleeve').value;
+  let sh = '<thead><tr><th>Vaulta sleeve</th>' + sleeves.map(s=>`<th>${fP(s)}</th>`).join('') + '</tr></thead><tbody>';
+  const nets = [], ratios = [];
+  sleeves.forEach(s => {
+    $('i_sleeve').value = s;
+    const mm = model();
+    const b = mm.blendUE(3);
+    nets.push(fD2(b.net)); ratios.push(b.ratio);
+  });
+  $('i_sleeve').value = saved;
+  sh += '<tr><td>Blended net contribution / mo</td>' + nets.map((n,i)=>
+        `<td class="${Math.abs(sleeves[i]-m.sleeve)<0.01?'hl bold':''}">${n}</td>`).join('') + '</tr>';
+  sh += '<tr class="bold"><td>Blended Y3 LTV : CAC</td>' + ratios.map((v,i)=>
+        `<td class="${Math.abs(sleeves[i]-m.sleeve)<0.01?'hl':''}"><span class="${v>=3?'pos':'neg'}">${fX(v)}</span></td>`).join('') + '</tr>';
+  $('t_sleeve').innerHTML = sh + '</tbody>';
+}
+
+// ── static research content ───────────────────────────────────────────────
+const RESEARCH = [
+ ["AUM fee — 0.50%/yr",
+  "Betterment Basic and Wealthfront both charge 0.25%. Acorns charges a flat $3/month, which is ~1.7% of its $2,142 average balance and ~2.5% on a $1,425 balance. 0.50% sits between the two and undercuts Acorns roughly 3x for small accounts.",
+  "<a href='https://www.unbiased.com/discover/financial-advice/best-robo-advisors' target='_blank'>unbiased.com</a> · <a href='https://www.acorns.com/learn/investing/acorns-vs-percentage-based-apps/' target='_blank'>acorns.com</a>"],
+ ["Reference balance — $2,142",
+  "Acorns held $30bn AUM across 14m registered users (Jul 2026); $1,876 in 2025 and $1,439 in 2024. Closest mass-market analogue to Vaulta's segments. Per funded account is higher, since registered exceeds funded.",
+  "<a href='https://investingintheweb.com/brokers/acorn-statistics/' target='_blank'>investingintheweb.com</a>"],
+ ["Monthly contribution — ~$50/mo (seg 2)",
+  "Acorns reports most customers investing roughly $50–60/month into core accounts. Modelled here as a % of wallet balance so it scales with segment wealth.",
+  "<a href='https://investingintheweb.com/brokers/acorn-statistics/' target='_blank'>investingintheweb.com</a>"],
+ ["Contribution rate — 1.0–3.5%/mo",
+  "The US personal saving rate was 2.7–3.0% of income in mid-2026. Top-quintile earners save 15–25%; bottom-quintile saving is negative. Segment rates scale to that spread, calibrated so segment 2 lands at the Acorns observation.",
+  "<a href='https://tradingeconomics.com/united-states/personal-saving-rate-percent-m-saar-fed-data.html' target='_blank'>tradingeconomics.com</a>"],
+ ["Investment return — 5.5%/yr",
+  "Vanguard's Dec-2025 10-year US equity forecast is 3.9–5.9%; BlackRock's was just over 5% in Sep-2025. Both sit well below the historical ~10% and reflect current valuations.",
+  "<a href='https://corporate.vanguard.com/content/dam/corp/research/pdf/isg_vemo_2026.pdf' target='_blank'>Vanguard VEMO 2026</a> · <a href='https://www.morningstar.com/markets/experts-forecast-stock-bond-returns-2026-edition' target='_blank'>Morningstar</a>"],
+ ["Affluent ceiling — ~$66,000",
+  "Betterment ~$65bn across 1m+ clients; Wealthfront $95bn across 1.4m+. The primary-brokerage tier, roughly 30x the Acorns balance — the gap that decides whether AUM can overtake NIM.",
+  "<a href='https://sacra.com/research/wealthfront-betterment-robo-advisor-resurrection/' target='_blank'>sacra.com</a>"],
+ ["The product is real — live Aug 2026",
+  "Dinari launched 724 tokenized US stocks including the full S&P 500 for US self-custody wallets, settled in USDC across 4 chains, each dShare backed 1:1 in regulated custody. The Vaulta Invest premise is available today.",
+  "<a href='https://www.coindesk.com/business/2026/08/04/dinari-brings-tokenized-u-s-stocks-to-american-investors-as-equity-race-heats-up' target='_blank'>CoinDesk</a> · <a href='https://www.theblock.co/post/410588/dinari-tokenized-sp-500-stocks-self-custody-wallets-using-usdc' target='_blank'>The Block</a>"],
+ ["Redemption / leakage — 8%/yr",
+  "No clean public disclosure exists for micro-investing redemption rates. This is a modelling judgement, not a researched figure — the weakest default in the model.",
+  "<span style='color:#C00000;font-weight:700'>MODELLING JUDGEMENT — not sourced</span>"]
+];
+
+const FINDINGS = [
+ ["AUM does not overtake the T-bill sleeve by Year 5 on researched contribution rates. The crossover needs AUM to reach 1.92x total wallet balances at the default settings; the model reaches 0.43x.", true],
+ ["The crossover is a pure ratio with no user count in it: AUM must exceed (t-bill rate × sleeve) ÷ AUM fee, times wallet balances. Growing the customer base moves both sides equally and never triggers it.", false],
+ ["Moving the sleeve to 20/80 makes the crossover easier — it cuts the hurdle from 5.57x balances to 1.92x — but it does so by shrinking the NIM line, not by growing AUM.", false],
+ ["Cost of the 20/80 split: blended LTV:CAC falls to about 1.5x against a 3x investability bar. Segment 1 (Underbanked) turns value-destructive and Segment 2 only reaches ~1.2x. Only Segments 3 and 4 clear their CAC.", true],
+ ["The monthly drip is not the lever. At 1–3.5% of balance per month, contributions move the ratio by roughly adoption × rate × months. The initial rollover at signup is what moves it.", false],
+ ["The 0.50% fee is conservatively priced — Acorns' flat $3/month is about 1.7% of its average balance, so there is real headroom before Vaulta looks expensive.", false]
+];
+
+$('t_research').innerHTML =
+  '<thead><tr><th style="width:22%">Assumption</th><th style="width:48%">Basis</th><th style="width:30%">Source</th></tr></thead><tbody>' +
+  RESEARCH.map(([a,b,c]) =>
+    `<tr><td style="text-align:left"><b>${a}</b></td><td style="text-align:left;font-size:11px;line-height:1.5">${b}</td><td style="text-align:left" class="src">${c}</td></tr>`
+  ).join('') + '</tbody>';
+
+$('t_find').innerHTML = FINDINGS.map(([t,w]) => `<li class="${w?'warn':''}">${t}</li>`).join('');
+
+// ── wiring ────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  $('tab-' + b.dataset.tab).classList.add('active');
+}));
+document.querySelectorAll('input').forEach(el => el.addEventListener('input', render));
+render();
+</script>
+</body>
+</html>
