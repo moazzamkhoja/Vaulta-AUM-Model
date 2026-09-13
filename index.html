@@ -122,16 +122,17 @@
         pass-through. QR is not how most people pay, so this is deliberately low — payments should not be carrying
         this model.</div>
       <input type="range" id="i_qrshare" min="0.01" max="1" step="0.01" value="0.10"></div>
-    <div class="slider-row"><label>Merchant Retained Balance <span id="l_mretain">10%</span></label>
+    <div class="slider-row"><label>Merchant Retained Balance <span id="l_mretain">25%</span></label>
       <div class="hint">Share of one month's collections a merchant leaves parked with Vaulta rather than sweeping out,
-        because Vaulta pays interest on it. Applied to <b>all</b> consumer spend settling through Vaulta, not just the
-        QR slice. Merchants keep only part — they pay their own costs out of the rest. Check the implied balance per
-        merchant below against the pre-pivot $5,000 assumption.</div>
-      <input type="range" id="i_mretain" min="0" max="1" step="0.01" value="0.10"></div>
-    <div class="slider-row"><label>Merchant Sleeve (Vaulta keeps) <span id="l_msleeve">25%</span></label>
-      <div class="hint">Pre-pivot default — Vaulta keeps 25%, the merchant receives 75% as interest. That is what
-        makes them willing to park the balance.</div>
-      <input type="range" id="i_msleeve" min="0" max="1" step="0.05" value="0.25"></div>
+        applied to <b>all</b> consumer spend settling through Vaulta. 25% is about <b id="l_mdays">7.6</b> days of
+        receipts — what a merchant holds when the balance earns something, rather than the ~3 days of pure settlement
+        float they would leave at a bank paying nothing.</div>
+      <input type="range" id="i_mretain" min="0" max="1" step="0.01" value="0.25"></div>
+    <div class="slider-row"><label>Merchant Sleeve (Vaulta keeps) <span id="l_msleeve">50%</span></label>
+      <div class="hint">Merchant receives <b id="l_mreward">2.40%</b> — better than any business checking account,
+        which is why they park it. Pre-pivot used 25% because that model was courting merchants as the primary
+        customer; here they are receiving settlement from a consumer franchise, so Vaulta has more pricing power.</div>
+      <input type="range" id="i_msleeve" min="0" max="1" step="0.05" value="0.50"></div>
     <div class="slider-row"><label>Consumers per Merchant <span id="l_cpm">100</span></label>
       <div class="hint">Pre-pivot default. Only used to express the float as a balance per merchant, so it can be
         sanity-checked — pre-pivot assumed <b>$5,000</b> per merchant.</div>
@@ -676,6 +677,8 @@ function render(){
   if($('l_cpm')) $('l_cpm').textContent=fN(val('i_cpm'));
   if($('l_permerch')) $('l_permerch').textContent=fD(y10.balPerMerch);
   if($('l_nmerch')) $('l_nmerch').textContent=fN(y10.nMerch);
+  if($('l_mdays')) $('l_mdays').textContent=(y10.spendVol>0?y10.merchBal/(y10.spendVol/365):0).toFixed(1);
+  if($('l_mreward')) $('l_mreward').textContent=fP2(val('i_tbill')*(1-val('i_msleeve')));
   $('k_ev').textContent=fM(m.EV); $('k_raev').textContent=fM(m.raEV);
   $('k_ltv').textContent=fD(u.ltv);
   $('k_ltv_sub').textContent='blended, Year 10';
@@ -904,6 +907,8 @@ function renderPnl(m){
    row('memo: of which through QR (earns the fee)',Y.map(y=>fD(y.qrVol)),'sub-row')+
    row('memo: merchant balance parked with Vaulta',Y.map(y=>fD(y.merchBal)),'sub-row')+
    row('memo: balance per merchant',Y.map(y=>fD(y.balPerMerch)),'sub-row')+
+   row('memo: days of receipts held',Y.map(y=>y.spendVol>0
+      ?(y.merchBal/(y.spendVol/365)).toFixed(1):'—'),'sub-row')+
    row('memo: gross T-bill on merchant float',Y.map(y=>fD(y.merchGross)),'sub-row')+
    row('T-bill NIM — merchant float',Y.map(y=>fD(y.merchNim)))+
    row('QR payment fees',Y.map(y=>fD(y.qr)))+
