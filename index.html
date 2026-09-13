@@ -122,6 +122,14 @@
         pass-through. QR is not how most people pay, so this is deliberately low — payments should not be carrying
         this model.</div>
       <input type="range" id="i_qrshare" min="0.01" max="1" step="0.01" value="0.10"></div>
+    <div class="slider-row"><label>Merchant Retained Balance <span id="l_mretain">30%</span></label>
+      <div class="hint">Share of one month's collections a merchant leaves parked with Vaulta rather than sweeping out.
+        Vaulta earns T-bill on it — the merchant side of the float.</div>
+      <input type="range" id="i_mretain" min="0" max="2" step="0.05" value="0.30"></div>
+    <div class="slider-row"><label>Merchant Sleeve (Vaulta keeps) <span id="l_msleeve">60%</span></label>
+      <div class="hint">Higher than the consumer sleeve — a business account expects less reward than a
+        consumer chasing yield.</div>
+      <input type="range" id="i_msleeve" min="0" max="1" step="0.05" value="0.60"></div>
 
     <hr class="div"><h3>③ Vaulta Invest</h3>
     <div class="slider-row"><label>Dinari Platform Fee <span id="l_dinari">0.15%</span></label>
@@ -339,17 +347,17 @@
 <script>
 // ═══════════ SEGMENTS ═══════════
 const SEG=[
- {key:'ub', name:"Unsatisfied Banked", tag:"Chime's market — overdraft-weary, fee-hostile",
-  cac:55, seedCust:700, startYear:1, bal:2500, spend:1.20, adopt:0.30, contrib:60, roll:750,
+ {key:'ub', name:"Unsatisfied Banked", tag:"Chime's market — sweeps the paycheck across to earn on it",
+  cac:55, seedCust:700, startYear:1, bal:2500, spend:1.20, adopt:0.30, contrib:60,
   churn1:0.040, churnM:0.010, fund:0.65, aumfee:0.0025},
  {key:'un', name:"Unbanked", tag:"4.2% of US households — education and onboarding barrier",
-  cac:120, seedCust:0, startYear:2, bal:800, spend:2.00, adopt:0.05, contrib:10, roll:0,
+  cac:120, seedCust:0, startYear:2, bal:800, spend:2.00, adopt:0.05, contrib:10,
   churn1:0.060, churnM:0.020, fund:0.40, aumfee:0.0025},
  {key:'ce', name:"Crypto Enthusiast", tag:"Already self-custodying — wants yield plus equities",
-  cac:45, seedCust:300, startYear:1, bal:6000, spend:0.40, adopt:0.75, contrib:250, roll:4000,
+  cac:45, seedCust:300, startYear:1, bal:6000, spend:0.40, adopt:0.75, contrib:250,
   churn1:0.030, churnM:0.008, fund:0.80, aumfee:0.0050},
- {key:'in', name:"International (EM)", tag:"Turkey, LatAm, South Asia — this is an investment account, not a wallet",
-  cac:25, seedCust:0, startYear:2, bal:1200, spend:0.12, adopt:0.75, contrib:120, roll:2000,
+ {key:'in', name:"International (EM)", tag:"Turkey, LatAm, South Asia — dollar savings vehicle",
+  cac:25, seedCust:0, startYear:2, bal:1200, spend:0.12, adopt:0.75, contrib:120,
   churn1:0.035, churnM:0.009, fund:0.55, aumfee:0.0125}];
 const ENTRY={ub:0, un:500, ce:0, in:1500};      // customers in the year a segment switches on
 const GROWTH={                                   // annual growth by stage
@@ -376,7 +384,7 @@ const $=id=>document.getElementById(id); const val=id=>+$(id).value;
 const GCOLS=[
  ['cac','CAC $ / funded','1'],['seedCust','Seed customers','10'],['startYear','Start year','1'],
  ['bal','Avg wallet balance $','50'],['spend','Spend % of balance','0.01'],['adopt','AUM adoption %','1'],
- ['contrib','AUM contribution $/mo','5'],['roll','Rollover at signup $','50'],
+ ['contrib','AUM contribution $/mo','5'],
  ['aumfee','AUM fee %/yr','0.05'],
  ['churn1','Churn %/mo — year 1','0.1'],['churnM','Churn %/mo — mature','0.1'],
  ['fund','Funding rate %','1']];
@@ -420,6 +428,7 @@ function readRamp(){
 // ═══════════ MODEL ═══════════
 function model(){
   const tbill=val('i_tbill'), sleeve=val('i_sleeve'), qrf=val('i_qrf'), qrShare=val('i_qrshare');
+  const mRetain=val('i_mretain'), mSleeve=val('i_msleeve');
   const dinariBps=val('i_dinari');
   // per-segment gross fee; Dinari's platform spread is deducted in basis points
   const netFeeOf=s=>Math.max(0, s.aumfee-dinariBps);
@@ -480,12 +489,13 @@ function model(){
     for(let q=1;q<=NQ;q++){ const y=Math.ceil(q/4);
       const qCh=1-Math.pow(1-effChurn(i,y),3);
       S.users[q]=qCust[i][q]*s.adopt*RAMP[stageOf(y)];
-      const surv=q===1?0:S.users[q-1]*(1-qCh);
-      const gn=Math.max(0,S.users[q]-surv), open=q===1?0:S.close[q-1];
-      S.roll[q]=gn*s.roll; S.con[q]=S.users[q]*s.contrib*3;
+      const open=q===1?0:S.close[q-1];
+      // No initial transfer: the balance is built purely from the monthly
+      // contribution and the return on it.
+      S.roll[q]=0; S.con[q]=S.users[q]*s.contrib*3;
       S.red[q]=-open*redeem/4; S.leak[q]=-open*qCh*liq;
-      S.ret[q]=(open+(S.roll[q]+S.con[q])/2)*qRet;
-      S.open[q]=open; S.close[q]=open+S.roll[q]+S.con[q]+S.red[q]+S.leak[q]+S.ret[q];
+      S.ret[q]=(open+S.con[q]/2)*qRet;
+      S.open[q]=open; S.close[q]=open+S.con[q]+S.red[q]+S.leak[q]+S.ret[q];
       S.avg[q]=(open+S.close[q])/2; }});
   const aumY=y=>{ const qs=[1,2,3,4].map(k=>(y-1)*4+k), fl=k=>qs.reduce((a,q)=>a+segA.reduce((b,S)=>b+S[k][q],0),0);
     return {avg:qs.reduce((a,q)=>a+segA.reduce((b,S)=>b+S.avg[q],0),0)/4,
@@ -497,7 +507,13 @@ function model(){
   const balY=y=>segs.reduce((a,s,i)=>a+cust[i][y]*s.bal,0);
   const nim=y=>balY(y)*tbill*sleeve;
   const rewards=y=>balY(y)*tbill*(1-sleeve);
-  const qrRev=y=>segs.reduce((a,s,i)=>a+cust[i][y]*s.bal*s.spend*12*qrShare*qrf,0);
+  // QR volume is what merchants collect through Vaulta; the fee is charged on it,
+  // and the slice they leave parked earns Vaulta a second sleeve.
+  const qrVol=y=>segs.reduce((a,s,i)=>a+cust[i][y]*s.bal*s.spend*12*qrShare,0);
+  const qrRev=y=>qrVol(y)*qrf;
+  const merchBal=y=>qrVol(y)/12*mRetain;
+  const merchGross=y=>merchBal(y)*tbill;
+  const merchNim=y=>merchGross(y)*mSleeve;
   const segAvg=(i,y)=>{ const qs=[1,2,3,4].map(k=>(y-1)*4+k);
     return qs.reduce((a,q)=>a+segA[i].avg[q],0)/4; };
   const aumRev=y=>segs.reduce((a,s,i)=>a+segAvg(i,y)*netFeeOf(s),0);
@@ -506,7 +522,7 @@ function model(){
   // AUM-weighted blended net fee, for the crossover ratio
   const blendedNetFee=y=>{ const tot=segs.reduce((a,s,i)=>a+segAvg(i,y),0);
     return tot>0?aumRev(y)/tot:0; };
-  const totalRev=y=>nim(y)+qrRev(y)+aumRev(y);
+  const totalRev=y=>nim(y)+qrRev(y)+merchNim(y)+aumRev(y);
 
   // ── costs ──
   const engHeads=y=>pv(y,4,8,15,25);
@@ -587,6 +603,7 @@ function model(){
   const years=[]; for(let y=1;y<=NY;y++) years.push({
     y,stage:STAGES[stageOf(y)],cust:total(y),bySeg:segs.map((s,i)=>cust[i][y]),
     bal:balY(y),nim:nim(y),rewards:rewards(y),qr:qrRev(y),aum:aumRev(y),
+    qrVol:qrVol(y),merchBal:merchBal(y),merchGross:merchGross(y),merchNim:merchNim(y),
     aumGross:aumGross(y),dinari:dinariFee(y),totalRev:totalRev(y),
     infraVar:infraVar(y),gp:gp(y),opex:opex(y),payroll:payroll(y),
     engCost:engCost(y),csCost:csCost(y),compCost:compCost(y),otherPay:otherPay(y),
@@ -657,7 +674,8 @@ function render(){
     scales:{x:{stacked:true,ticks:{font:{size:9}}},y:{stacked:true,ticks:{callback:v=>v+'K',font:{size:9}},grid:{color:'#eee'}}}}});
   if(chMix)chMix.destroy();
   chMix=new Chart($('ch_mix'),{type:'bar',data:{labels,datasets:[
-   {label:'T-bill NIM',data:Y.map(y=>+(y.nim/1e6).toFixed(3)),backgroundColor:'rgba(31,78,121,.85)'},
+   {label:'T-bill NIM — consumer',data:Y.map(y=>+(y.nim/1e6).toFixed(3)),backgroundColor:'rgba(31,78,121,.85)'},
+   {label:'T-bill NIM — merchant float',data:Y.map(y=>+(y.merchNim/1e6).toFixed(3)),backgroundColor:'rgba(79,195,247,.8)'},
    {label:'QR payments',data:Y.map(y=>+(y.qr/1e6).toFixed(3)),backgroundColor:'rgba(46,117,182,.7)'},
    {label:'AUM fee (net of Dinari)',data:Y.map(y=>+(y.aum/1e6).toFixed(3)),backgroundColor:'rgba(112,173,71,.9)'}]},
    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:9},boxWidth:10}},
@@ -707,8 +725,9 @@ function render(){
    row('Stage',Y.map(y=>`<span style="font-size:10px;color:#888">${y.stage}</span>`))+
    row('Funded customers',Y.map(y=>fN(y.cust)))+
    row('Wallet balances',Y.map(y=>fM(y.bal)))+
-   row('T-bill NIM',Y.map(y=>fM(y.nim)),'bold')+
-   row('QR payments',Y.map(y=>fM(y.qr)))+
+   row('T-bill NIM — consumer',Y.map(y=>fM(y.nim)),'bold')+
+   row('T-bill NIM — merchant float',Y.map(y=>fM(y.merchNim)))+
+   row('QR payment fees',Y.map(y=>fM(y.qr)))+
    row('AUM fee (net)',Y.map(y=>fM(y.aum)),'bold hl')+
    row('NET REVENUE',Y.map(y=>fM(y.totalRev)),'bold rule')+
    row('AUM % of revenue',Y.map(y=>fP(y.totalRev>0?y.aum/y.totalRev:0)),'hl')+
@@ -841,7 +860,10 @@ function renderPnl(m){
   $('t_pnl').innerHTML='<thead><tr><th>Line</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
    row('memo: gross T-bill float',Y.map(y=>fD(y.nim+y.rewards)),'sub-row')+
    row('memo: Vaulta Rewards paid out',Y.map(y=>fD(-y.rewards)),'sub-row')+
-   row('T-bill NIM (sleeve)',Y.map(y=>fD(y.nim)))+
+   row('T-bill NIM — consumer sleeve',Y.map(y=>fD(y.nim)))+
+   row('memo: merchant collections through Vaulta',Y.map(y=>fD(y.qrVol)),'sub-row')+
+   row('memo: merchant balance parked',Y.map(y=>fD(y.merchBal)),'sub-row')+
+   row('T-bill NIM — merchant float',Y.map(y=>fD(y.merchNim)))+
    row('QR payment fees',Y.map(y=>fD(y.qr)))+
    row('AUM fee (gross)',Y.map(y=>fD(y.aumGross)),'sub-row')+
    row('less Dinari revenue share',Y.map(y=>fD(-y.dinari)),'sub-row')+
