@@ -247,14 +247,16 @@
 <script>
 // ═════════ SEGMENTS — 7 inputs each ═════════
 const SEG=[
+// CAC anchored to Chime's disclosed $109 at scale rather than to an early-stage figure,
+// since these segments are assumed to spend and hold like Chime's customers.
  {k:'ub',n:"Unsatisfied Banked",t:"Chime's core — but paid interest on the whole balance",
-  cac:55, seed:700, entry:0,   bal:4000, spend:970, adopt:0.40, contrib:150, churn:0.008},
+  cac:110,seed:700, entry:0,   bal:4000, spend:970, adopt:0.40, contrib:150, churn:0.008},
  {k:'un',n:"Unbanked",t:"4.2% of US households; education and onboarding barrier",
-  cac:120,seed:0,   entry:500, bal:1200, spend:600, adopt:0.10, contrib:40,  churn:0.018},
+  cac:200,seed:0,   entry:500, bal:1200, spend:600, adopt:0.10, contrib:40,  churn:0.018},
  {k:'ce',n:"Crypto Enthusiast",t:"Self-custodying already; wants yield plus equities",
-  cac:45, seed:300, entry:0,   bal:8000, spend:600, adopt:0.80, contrib:400, churn:0.007},
+  cac:80, seed:300, entry:0,   bal:8000, spend:600, adopt:0.80, contrib:400, churn:0.007},
  {k:'in',n:"International (EM)",t:"Turkey, LatAm, South Asia — dollar savings vehicle",
-  cac:25, seed:0,   entry:1500,bal:3000, spend:250, adopt:0.75, contrib:200, churn:0.008}];
+  cac:60, seed:0,   entry:1500,bal:3000, spend:250, adopt:0.75, contrib:200, churn:0.008}];
 // Calibrated so Year 10 reaches ~4.3m customers, half of Chime's 8.6m active members.
 const GROWTH={ub:[300,130,98], un:[200,110,88], ce:[250,100,68], in:[350,160,98]};
 const STAGES=['Seed','Series A','Series B','Series C'];
@@ -670,7 +672,8 @@ function renderBench(m){
    ["Growth is set to reach ~4.3m customers by Year 10, half of Chime's 8.6m active members. Chime took twelve years to get there and Wealthfront seventeen to reach 1.4m, so this is an ambitious but not absurd ramp.",false],
    ["Faster growth cannot mature the AUM book — it dilutes it. At 45% Series C growth the book average is $7,783; at 100% it falls to $5,271 even as total AUM more than doubles. Only tenure and contribution size raise the per-investor balance, so the Wealthfront comparison should be made against a tenured cohort, not book to book.",false],
    ["Customer service and compliance headcount scale with the customer base rather than stepping by stage. Without that the model showed a 71% EBITDA margin at 4.3m customers, which is higher than Visa's.",true],
-   ["Even after that fix the margin is high and all-in opex per customer is well under Chime's $254. That is a consequence of two optimistic inputs — a $45 blended CAC against Chime's $109, and a leaner org — not of a structurally better business. Both are levers; treat the margin as an output of those choices rather than a finding.",true],
+   ["CAC is now anchored to Chime's disclosed $109 at scale rather than an early-stage figure, since these segments are assumed to spend and hold like Chime's customers. Blended lands near $90. That halves LTV:CAC from 8.2x to 4.2x, which is a far more defensible number to put in front of an investor.",false],
+   ["The margin is still high and all-in opex per customer sits under Chime's $254, which follows from a leaner org rather than a structurally better business. Treat it as an output of that assumption, not a finding.",true],
    ["Vaulta acquires wallet customers who then adopt investing; it does not acquire investment-first customers the way Wealthfront does. That is a structural reason AUM lags, and the fix would be a separate acquisition motion with its own CAC and much larger opening balances.",false]];
   $('t_find').innerHTML=F.map(([t,w])=>`<li class="${w?'warn':''}">${t}</li>`).join('');
 }
