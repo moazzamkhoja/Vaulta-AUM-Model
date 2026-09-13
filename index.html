@@ -242,7 +242,13 @@
     <p class="note">CAC is per <b>funded</b> customer, matching how Chime ($109) and Nubank ($7.40) report it — the signups
     that never funded are already inside those figures. The funding rate is a diagnostic showing implied spend per signup, not
     a second multiplier. Seed customers are Year-1 counts; segments that start later use their entry count in the year they
-    switch on.</p></div>
+    switch on.</p>
+    <p class="note"><b>Spend above 100% of balance is deliberate — it is turnover, not drawdown.</b> Balance is a stock,
+    spend is a flow. A customer holding $2,500 on average while their pay lands and drains each month can easily spend
+    $3,000, because the balance is replenished continuously. 120% means the balance turns over 1.2 times a month, or
+    roughly 25 days of cash on hand. The unbanked sit highest at 200% precisely because they hold least and spend fastest;
+    International sits lowest at 12% because it is a savings account, not a spending one. Implied dollar spend is shown on
+    the Unit Economics tab so the ratio can be sanity-checked against income.</p></div>
   <div class="sec"><h3>Growth rate by stage (annual)</h3><div class="scroll"><table class="grid" id="t_growth"></table></div>
     <p class="note">Stages: Seed = Year 1 · Series A = Years 2–3 · Series B = Years 4–6 · Series C = Years 7–10.
     A segment with a later start contributes nothing until its entry year.</p></div>
@@ -704,7 +710,10 @@ function renderUnit(m){
   let h='<thead><tr><th>Per customer / month</th>'+m.segs.map(s=>`<th>${s.name}</th>`).join('')+'<th>Blended</th></tr></thead><tbody>';
   const U=m.segs.map((s,i)=>m.ueSegY(i,y10)), b=m.blendY(y10);
   const r=(l,f,bv,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+U.map(f).map(x=>`<td>${x}</td>`).join('')+`<td>${bv}</td></tr>`;
-  h+=r('Avg balance',(x,i)=>fD(m.segs[i].bal),'—');
+  h+=r('Avg wallet balance',(x,i)=>fD(m.segs[i].bal),'—');
+  h+=r('Spend % of balance / mo',(x,i)=>fP(m.segs[i].spend),'—');
+  h+=r('memo: implied spend $/mo',(x,i)=>fD(m.segs[i].bal*m.segs[i].spend),'—','sub-row');
+  h+=r('memo: implied spend $/yr',(x,i)=>fD(m.segs[i].bal*m.segs[i].spend*12),'—','sub-row');
   h+=r('Churn /mo — year 1',(x,i)=>fP2(m.segs[i].churn1),'—');
   h+=r('Churn /mo — mature',(x,i)=>fP2(m.segs[i].churnM),'—');
   h+=r('First-year churn (annual)',x=>fP(x.yr1Churn),'—','sub-row');
