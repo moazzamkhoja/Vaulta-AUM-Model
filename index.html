@@ -636,10 +636,24 @@ function model(){
     compHeads:compHeads(y),A:aumY(y),ue:blendY(y),cash:cash[y],
     grossAdds:segs.reduce((a,s,i)=>a+grossAdds(i,y),0)});
   const bnf=blendedNetFee(NY);
+  // Static comparison understates AUM: a wallet dollar stays a dollar, but an AUM
+  // dollar compounds at the market return, so the fee is charged on a growing base.
+  // Compare present values per $1 placed, over the LTV horizon at the LTV rate.
+  const yrsH=HZ/12, gNet=Math.max(-0.99,mktRet-bnf), wYield=tbill*sleeve;
+  let walletPV=0, aumPV=0;
+  for(let t=1;t<=yrsH;t++){
+    walletPV += wYield/Math.pow(1+ltvWacc,t);
+    aumPV    += bnf*Math.pow(1+gNet,t-1)/Math.pow(1+ltvWacc,t);
+  }
+  const requiredGrowth=aumPV>0?walletPV/aumPV:Infinity;
+  const parityFeeStatic=wYield;
+  const parityFeeGrowth=aumPV>0?bnf*walletPV/aumPV:Infinity;
   return {years,segs,ueSegY,blendY,effCAC,EV,raEV,beYear,pvSum,pvTV,eb10,
           seedRaise,serARaise,serBRaise,serCRaise,tbill,sleeve,
-          aumFeeNet:bnf,dinariBps,netFeeOf,walletYield:tbill*sleeve,
-          required:bnf>0?(tbill*sleeve)/bnf:Infinity,share,cust};
+          aumFeeNet:bnf,dinariBps,netFeeOf,walletYield:wYield,
+          required:bnf>0?wYield/bnf:Infinity,
+          walletPV,aumPV,requiredGrowth,parityFeeStatic,parityFeeGrowth,yrsH,gNet,
+          share,cust};
 }
 
 // ═══════════ RENDER ═══════════
@@ -940,7 +954,7 @@ function renderAum(m){
   const Y=m.years,row=(l,c,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+c.map(x=>`<td>${x}</td>`).join('')+'</tr>';
   $('t_roll').innerHTML='<thead><tr><th>Roll-forward</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
    row('Investors',Y.map(y=>fN(y.A.users)))+row('Opening AUM',Y.map(y=>fM(y.A.open)))+
-   row('+ Rollovers',Y.map(y=>fM(y.A.roll)),'sub-row')+row('+ Contributions',Y.map(y=>fM(y.A.con)),'sub-row')+
+   row('+ Contributions',Y.map(y=>fM(y.A.con)),'sub-row')+
    row('− Redemptions',Y.map(y=>fM(y.A.red)),'sub-row')+row('− Churn leakage',Y.map(y=>fM(y.A.leak)),'sub-row')+
    row('+ Market return',Y.map(y=>fM(y.A.ret)),'sub-row')+
    row('CLOSING AUM',Y.map(y=>fM(y.A.close)),'bold rule')+
@@ -953,15 +967,23 @@ function renderAum(m){
       return fP((y.A.close/y.A.users)/(p.A.close/p.A.users)-1); }),'sub-row')+
    row('AUM fee net to Vaulta',Y.map(y=>fM(y.aum)),'bold hl')+'</tbody>';
   $('f_algebra').textContent=
-   'A wallet dollar earns   t-bill × sleeve            = '+fP2(m.walletYield)+' / yr\n'+
-   'An AUM dollar earns     blended net fee            = '+fP2(m.aumFeeNet)+' / yr\n'+
-   '                        ratio                      = '+fX(m.walletYield/(m.aumFeeNet||1e-9))+'\n\n'+
-   'So AUM ÷ balances must exceed '+fX(m.required)+' before the AUM line matches the sleeve.';
+   'STATIC — rate on rate, year one only\n'+
+   '  wallet dollar   t-bill × sleeve        = '+fP2(m.walletYield)+' / yr\n'+
+   '  AUM dollar      blended net fee        = '+fP2(m.aumFeeNet)+' / yr\n'+
+   '  AUM ÷ balances needed to match         = '+fX(m.required)+'\n\n'+
+   'GROWTH-ADJUSTED — present value per $1 placed, over '+m.yrsH.toFixed(0)+' years at '+fP(val('i_ltvwacc'))+'\n'+
+   '  A wallet dollar stays a dollar. An AUM dollar compounds at '+fP(m.gNet)+' net,\n'+
+   '  so the fee is charged on a growing base — Vaulta participates in the return.\n\n'+
+   '  PV of a wallet dollar                  = '+fP2(m.walletPV)+'\n'+
+   '  PV of an AUM dollar                    = '+fP2(m.aumPV)+'\n'+
+   '  AUM ÷ balances needed to match         = '+fX(m.requiredGrowth)+'\n'+
+   '  fee that matches the sleeve            = '+fP2(m.parityFeeGrowth)+'  (vs '+fP2(m.parityFeeStatic)+' static)';
   $('t_cross').innerHTML='<thead><tr><th>Metric</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
    row('Total AUM',Y.map(y=>fM(y.A.close)))+row('Wallet balances',Y.map(y=>fM(y.bal)))+
    row('AUM ÷ balances',Y.map(y=>fX(y.bal>0?y.A.close/y.bal:0)),'bold hl')+
-   row('Required ratio',Y.map(()=>fX(m.required)))+
-   row('AUM fee ÷ NIM',Y.map(y=>fX(y.nim>0?y.aum/y.nim:0)),'bold')+'</tbody>';
+   row('Required ratio — static',Y.map(()=>fX(m.required)),'sub-row')+
+   row('Required ratio — growth-adjusted',Y.map(()=>fX(m.requiredGrowth)),'bold')+
+   row('AUM fee ÷ consumer NIM',Y.map(y=>fX(y.nim>0?y.aum/y.nim:0)),'bold')+'</tbody>';
 }
 
 const RESEARCH=[
