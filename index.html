@@ -255,20 +255,24 @@ const SEG=[
   cac:45, seed:300, entry:0,   bal:8000, spend:600, adopt:0.80, contrib:400, churn:0.007},
  {k:'in',n:"International (EM)",t:"Turkey, LatAm, South Asia — dollar savings vehicle",
   cac:25, seed:0,   entry:1500,bal:3000, spend:250, adopt:0.75, contrib:200, churn:0.008}];
-const GROWTH={ub:[250,120,45], un:[150,100,40], ce:[200,90,30], in:[300,150,45]};
+// Calibrated so Year 10 reaches ~4.3m customers, half of Chime's 8.6m active members.
+const GROWTH={ub:[300,130,98], un:[200,110,88], ce:[250,100,68], in:[350,160,98]};
 const STAGES=['Seed','Series A','Series B','Series C'];
 const stageOf=y=> y===1?0 : y<=3?1 : y<=6?2 : 3;
 const NY=10, MSLEEVE=0.30, CHURN1X=4, HORIZON=60, TERMG=0.04, STAGED=0.65;
 // ── team: headcount by stage, salary, and non-payroll fixed cost ──
+// Fixed-headcount roles are set by stage. Customer service and compliance instead
+// SCALE with the customer base — a stage-step cost breaks badly at millions of users.
 const ROLES=[
  ['eng','Engineering',        [4,12,45,160], 150000],
- ['cs', 'Customer service',   [2, 6,25, 90],  57000],
- ['cmp','Compliance / BSA-AML',[1, 3, 8, 25], 130000],
  ['led','Leadership',         [2, 3, 6, 12], 112000],
  ['leg','Legal',              [0, 1, 3,  8], 135000],
  ['sec','Security',           [1, 1, 3,  8], 190000],
  ['all','Alliances',          [1, 2, 4, 10], 140000]];
-const NONPAY=[0.5,1.5,5.0,15.0];   // $M/yr by stage
+const SCALED=[['cs','Customer service',15000,57000],   // one per N customers
+              ['cmp','Compliance / BSA-AML',100000,130000]];
+const NONPAY=[0.5,1.5,5.0,15.0];   // $M/yr by stage, plus a % of revenue
+const NONPAY_PCT=0.06;             // G&A, audit, fraud ops that scale with the book
 const BENEFITS=0.25;
 
 const fM=v=>Math.abs(v)>=1e9?'$'+(v/1e9).toFixed(2)+'B':Math.abs(v)>=1e6?'$'+(v/1e6).toFixed(1)+'M':Math.abs(v)>=1e3?'$'+(v/1e3).toFixed(0)+'K':'$'+v.toFixed(0);
@@ -296,22 +300,30 @@ function buildGrid(){
   ROLES.forEach(([k,n,hc])=>{ hd+=`<tr><td><span class="segname">${n}</span></td>`+
     hc.map((v,j)=>`<td><input type="number" id="h_${k}_${j}" value="${v}" step="1"></td>`).join('')+'</tr>';});
   $('t_head').innerHTML=hd+'</tbody>';
-  let sl='<thead><tr><th>Function</th><th>Annual salary</th><th>Benefits loading</th></tr></thead><tbody>';
-  ROLES.forEach(([k,n,,s],i)=>{ sl+=`<tr><td><span class="segname">${n}</span></td>`+
+  let sl='<thead><tr><th>Function</th><th>Annual salary</th><th>Scaling</th></tr></thead><tbody>';
+  ROLES.forEach(([k,n,,s])=>{ sl+=`<tr><td><span class="segname">${n}</span></td>`+
+    `<td><input type="number" id="s_${k}" value="${s}" step="5000"></td><td style="text-align:left;font-size:10px;color:#888">set by stage</td></tr>`;});
+  SCALED.forEach(([k,n,r,s])=>{ sl+=`<tr><td><span class="segname">${n}</span></td>`+
     `<td><input type="number" id="s_${k}" value="${s}" step="5000"></td>`+
-    (i===0?`<td rowspan="${ROLES.length}" style="vertical-align:middle"><input type="number" id="s_ben" value="${(BENEFITS*100).toFixed(0)}" step="1">%</td>`:'')+'</tr>';});
+    `<td style="text-align:left">1 per <input type="number" id="r_${k}" value="${r}" step="1000" style="width:78px"> customers</td></tr>`;});
+  sl+=`<tr><td><span class="segname">Benefits loading</span></td><td><input type="number" id="s_ben" value="${(BENEFITS*100).toFixed(0)}" step="1">%</td><td></td></tr>`;
   $('t_sal').innerHTML=sl+'</tbody>';
-  let np='<thead><tr><th></th>'+STAGES.map(s=>`<th>${s}</th>`).join('')+'</tr></thead><tbody><tr>'+
-    '<td><span class="segname">Non-payroll fixed</span></td>'+
-    NONPAY.map((v,j)=>`<td><input type="number" id="np_${j}" value="${v}" step="0.5"></td>`).join('')+'</tr></tbody>';
+  let np='<thead><tr><th></th>'+STAGES.map(s=>`<th>${s}</th>`).join('')+'<th>% of revenue</th></tr></thead><tbody><tr>'+
+    '<td><span class="segname">Non-payroll fixed</span><span class="segtag">base by stage, plus a share of revenue for G&amp;A, audit and fraud ops</span></td>'+
+    NONPAY.map((v,j)=>`<td><input type="number" id="np_${j}" value="${v}" step="0.5"></td>`).join('')+
+    `<td><input type="number" id="np_pct" value="${(NONPAY_PCT*100).toFixed(0)}" step="1">%</td></tr></tbody>`;
   $('t_nonpay').innerHTML=np;
 }
-function readTeam(){
+// Fixed cost is a function of the year, because two roles scale with customers.
+function teamFor(stage,cust,rev){
   const ben=V('s_ben')/100;
-  const payroll=[0,1,2,3].map(j=>ROLES.reduce((a,[k])=>a+V(`h_${k}_${j}`)*V(`s_${k}`),0)*(1+ben));
-  const nonpay=[0,1,2,3].map(j=>V(`np_${j}`)*1e6);
-  return {ben,payroll,nonpay,fixed:payroll.map((p,j)=>p+nonpay[j]),
-          heads:[0,1,2,3].map(j=>ROLES.reduce((a,[k])=>a+V(`h_${k}_${j}`),0))};
+  let heads=ROLES.reduce((a,[k])=>a+V(`h_${k}_${stage}`),0);
+  let pay=ROLES.reduce((a,[k])=>a+V(`h_${k}_${stage}`)*V(`s_${k}`),0);
+  SCALED.forEach(([k,,rDef])=>{ const r=V(`r_${k}`)||rDef;
+    const h=Math.max(1,Math.ceil(cust/r)); heads+=h; pay+=h*V(`s_${k}`); });
+  const payroll=pay*(1+ben);
+  const nonpay=V(`np_${stage}`)*1e6 + rev*(V('np_pct')/100);
+  return {heads,payroll,nonpay,fixed:payroll+nonpay,ben};
 }
 const readSegs=()=>SEG.map((s,i)=>{ const o={k:s.k,n:s.n,t:s.t};
   COLS.forEach(([k])=>{ const r=V(`x_${i}_${k}`); o[k]=PCT.includes(k)?r/100:r; });
@@ -322,7 +334,6 @@ function model(){
   const tb=V('i_tb'), cs=V('i_cs'), mr=V('i_mr'), vm=V('i_vm'), ic=V('i_ic'), qr=V('i_qr');
   const af=V('i_af'), ret=V('i_ret'), rd=V('i_rd'), vc=V('i_vc'), dr=V('i_dr');
   const ex=V('i_ex'), sv=V('i_sv');
-  const T=readTeam(), fixed=T.fixed;
   const S=readSegs();
 
   // customers
@@ -367,7 +378,8 @@ function model(){
   // costs
   const varC=y=>tot(y)*vc*12;
   const mktg=y=>S.reduce((a,s,i)=>a+gross(i,y)*s.cac,0);
-  const fx=y=>fixed[stageOf(y)];
+  const team=y=>teamFor(stageOf(y),tot(y),rev(y));
+  const fx=y=>team(y).fixed;
   const opex=y=>mktg(y)+fx(y);
   const ebitda=y=>rev(y)-varC(y)-opex(y);
 
@@ -413,9 +425,9 @@ function model(){
     aumRed:S.reduce((a,s,i)=>a+aumFlow[i].red[y],0),
     aumGr:S.reduce((a,s,i)=>a+aumFlow[i].ret[y],0),
     rev:rev(y),varC:varC(y),mktg:mktg(y),fixed:fx(y),opex:opex(y),ebitda:eb[y],
-    heads:T.heads[stageOf(y)],
+    heads:team(y).heads,payroll:team(y).payroll,nonpay:team(y).nonpay,
     gross:S.reduce((a,s,i)=>a+gross(i,y),0),ue:blend(y),cash:cash[y]});
-  return {Y,S,ue,blend,EV,raEV,be,pv,pvTV,raise,tb,cs,mr,vm,ic,qr,af,vc,cu,T};
+  return {Y,S,ue,blend,EV,raEV,be,pv,pvTV,raise,tb,cs,mr,vm,ic,qr,af,vc,cu};
 }
 
 // ═════════ RENDER ═════════
@@ -492,25 +504,29 @@ function render(){
    R('Revenue / customer / yr',Y.map(y=>fD(y.cust?y.rev/y.cust:0)),'bold')+
    R('LTV : CAC',Y.map(y=>`<span class="${y.ue.ratio>=3?'pos':'neg'}">${fX(y.ue.ratio)}</span>`),'bold hl')+
    '</tbody>';
-  [0,1,2,3].forEach(j=>{ if($('d_f'+j)) $('d_f'+j).textContent=fM(m.T.fixed[j]); });
+  const stageYr=[1,3,6,10];
+  stageYr.forEach((yy,j)=>{ if($('d_f'+j)) $('d_f'+j).textContent=fM(m.Y[yy-1].fixed); });
   renderCust(m); renderUnit(m); renderPnl(m); renderTeam(m); renderBench(m);
 }
 function renderTeam(m){
-  const T=m.T, Y=m.Y;
-  const stageCust=[Y[0].cust,Y[2].cust,Y[5].cust,Y[9].cust];
-  $('c_team').innerHTML=`<b>Fixed operating cost is derived here, not typed in.</b> Payroll is headcount ×
-   salary × (1 + ${fP(T.ben)} benefits), plus non-payroll fixed cost, by stage. It flows straight into the P&L —
-   marketing is the only other operating line and that is CAC × gross adds.`;
+  const Y=m.Y;
+  $('c_team').innerHTML=`<b>Fixed operating cost is derived here, not typed in.</b> Engineering, leadership, legal,
+   security and alliances are set by stage. <b>Customer service and compliance scale with the customer base</b> —
+   a stage-step cost breaks badly once the book runs to millions. Non-payroll carries a base by stage plus a share of
+   revenue for G&amp;A, audit and fraud operations. Marketing is the only other operating line, and that is
+   CAC × gross adds.`;
   const R=(l,c,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+c.map(x=>`<td>${x}</td>`).join('')+'</tr>';
-  $('t_fixed').innerHTML='<thead><tr><th>Stage</th>'+STAGES.map(s=>`<th>${s}</th>`).join('')+'</tr></thead><tbody>'+
-   R('Headcount',T.heads.map(h=>fN(h)))+
-   R('Payroll incl. benefits',T.payroll.map(p=>fM(p)),'sub-row')+
-   R('Non-payroll fixed',T.nonpay.map(p=>fM(p)),'sub-row')+
-   R('TOTAL FIXED COST',T.fixed.map(p=>fM(p)),'bold rule')+
-   R('Customers at stage end',stageCust.map(c=>fN(c)))+
-   R('Customers per employee',stageCust.map((c,j)=>T.heads[j]?fN(c/T.heads[j]):'—'),'sub-row')+
-   R('Fixed cost per customer / yr',stageCust.map((c,j)=>c?fD(T.fixed[j]/c):'—'),'bold')+
-   R('   benchmark: Wealthfront ~$138, Chime ~$254',STAGES.map(()=>''),'sub-row')+
+  $('t_fixed').innerHTML='<thead><tr><th>Line</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
+   R('Stage',Y.map(y=>`<span style="font-size:10px;color:#888">${y.stage}</span>`))+
+   R('Customers',Y.map(y=>fN(y.cust)))+
+   R('Headcount',Y.map(y=>fN(y.heads)),'bold')+
+   R('Customers per employee',Y.map(y=>y.heads?fN(y.cust/y.heads):'—'),'sub-row')+
+   R('Payroll incl. benefits',Y.map(y=>fM(y.payroll)),'sub-row')+
+   R('Non-payroll',Y.map(y=>fM(y.nonpay)),'sub-row')+
+   R('TOTAL FIXED COST',Y.map(y=>fM(y.fixed)),'bold rule')+
+   R('Fixed cost / customer / yr',Y.map(y=>y.cust?fD(y.fixed/y.cust):'—'),'bold')+
+   R('All-in opex / customer / yr',Y.map(y=>y.cust?fD((y.fixed+y.varC+y.mktg)/y.cust):'—'),'hl')+
+   R('   benchmark: Wealthfront ~$138 · Chime ~$254',Y.map(()=>''),'sub-row')+
    '</tbody>';
 }
 function renderCust(m){ const Y=m.Y,R=(l,c,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+c.map(x=>`<td>${x}</td>`).join('')+'</tr>';
@@ -651,7 +667,11 @@ function renderBench(m){
    ["QR is an acquisition tool, not a revenue line. Every dollar moved from card to QR takes Vaulta from 2.00% to 0.50%. Good for the merchant, expensive for us — which is exactly why it pulls merchants.",true],
    ["Paying interest on the whole checking balance is the one thing Chime structurally cannot copy, because interchange economics depend on the deposit being free. It is the reason to assume balances above Chime's rather than at them.",false],
    ["Neither comparable earns most of its money from its namesake activity. Chime is 69% interchange; Wealthfront is 74% deposit spread and only 25% advisory fees, on $26,071 of invested assets per client. A pure 0.25% money-management model does not exist at scale.",true],
-   ["The model is now five revenue lines and two cost lines. Fixed cost is set directly by stage rather than built from headcount, because a headcount build implied precision the model does not have.",false]];
+   ["Growth is set to reach ~4.3m customers by Year 10, half of Chime's 8.6m active members. Chime took twelve years to get there and Wealthfront seventeen to reach 1.4m, so this is an ambitious but not absurd ramp.",false],
+   ["Faster growth cannot mature the AUM book — it dilutes it. At 45% Series C growth the book average is $7,783; at 100% it falls to $5,271 even as total AUM more than doubles. Only tenure and contribution size raise the per-investor balance, so the Wealthfront comparison should be made against a tenured cohort, not book to book.",false],
+   ["Customer service and compliance headcount scale with the customer base rather than stepping by stage. Without that the model showed a 71% EBITDA margin at 4.3m customers, which is higher than Visa's.",true],
+   ["Even after that fix the margin is high and all-in opex per customer is well under Chime's $254. That is a consequence of two optimistic inputs — a $45 blended CAC against Chime's $109, and a leaner org — not of a structurally better business. Both are levers; treat the margin as an output of those choices rather than a finding.",true],
+   ["Vaulta acquires wallet customers who then adopt investing; it does not acquire investment-first customers the way Wealthfront does. That is a structural reason AUM lags, and the fix would be a separate acquisition motion with its own CAC and much larger opening balances.",false]];
   $('t_find').innerHTML=F.map(([t,w])=>`<li class="${w?'warn':''}">${t}</li>`).join('');
 }
 document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>{
