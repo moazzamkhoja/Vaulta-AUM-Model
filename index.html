@@ -172,6 +172,11 @@
       <input type="range" id="i_wacc" min="0.10" max="0.40" step="0.01" value="0.20"></div>
     <div class="slider-row"><label>LTV Discount Rate <span id="l_ltvwacc">15%</span></label>
       <input type="range" id="i_ltvwacc" min="0.05" max="0.35" step="0.01" value="0.15"></div>
+    <div class="slider-row"><label>LTV Horizon <span id="l_horizon">60 mo</span></label>
+      <div class="hint">The P&amp;L runs 10 years but LTV is capped here — 60 months is the conventional cut.
+        With mature churn near 1%/mo a real share of customers survive past the cap, so the cap binds and
+        truncates value. Raise it to see how much.</div>
+      <input type="range" id="i_horizon" min="12" max="120" step="6" value="60"></div>
     <div class="slider-row"><label>Exit EBITDA Multiple <span id="l_exitm">10x</span></label>
       <input type="range" id="i_exitm" min="3" max="20" step="1" value="10"></div>
     <div class="slider-row"><label>Survival Probability <span id="l_surv">35%</span></label>
@@ -209,6 +214,10 @@
     </div>
     <div class="charts-row even">
       <div class="chart-card"><h4>Revenue by Line ($M)</h4><canvas id="ch_mix"></canvas></div>
+      <div class="chart-card"><h4>Total AUM vs Wallet Balances ($M) — and AUM per Investor</h4><canvas id="ch_aum"></canvas></div>
+    </div>
+    <div class="charts-row even">
+      <div class="chart-card"><h4>AUM Build — where the balance comes from ($M/yr)</h4><canvas id="ch_flow"></canvas></div>
       <div class="chart-card"><h4>Contribution per Customer per Month</h4><canvas id="ch_con"></canvas></div>
     </div>
     <div class="table-card"><h4>Summary by Year</h4><div class="scroll"><table id="t_summary"></table></div></div>
@@ -237,6 +246,12 @@
   <div class="sec"><h3>Growth rate by stage (annual)</h3><div class="scroll"><table class="grid" id="t_growth"></table></div>
     <p class="note">Stages: Seed = Year 1 · Series A = Years 2–3 · Series B = Years 4–6 · Series C = Years 7–10.
     A segment with a later start contributes nothing until its entry year.</p></div>
+  <div class="sec"><h3>Vaulta Invest availability by stage</h3><div class="scroll"><table class="grid" id="t_ramp"></table></div>
+    <p class="note">Scales each segment's AUM adoption ceiling while the product rolls out. This used to start at
+    <b>zero in Year 1</b>, carried over from the original brief which treated tokenized investing as a "Year 2+ upsell".
+    That is wrong for a money-management business where the investing product <i>is</i> the product — and Dinari's
+    tokenized-equity rails went live in August 2026, so there is no technical reason to wait. It now starts at 60% of
+    ceiling at seed.</p></div>
   <div class="sec"><h3>Funded customers by segment and year</h3><div class="scroll"><table id="t_custyr"></table></div></div>
 </div></div>
 
@@ -304,7 +319,10 @@ const GROWTH={                                   // annual growth by stage
 const STAGES=['Seed','Series A','Series B','Series C'];
 const stageOf=y=> y===1?0 : y<=3?1 : y<=6?2 : 3;
 const NY=10, NQ=NY*4;
-const RAMP=[0,0.45,0.70,0.90,1,1,1,1,1,1];
+// Availability of Vaulta Invest by stage, as a share of each segment's adoption ceiling.
+// Live from seed: Dinari's tokenized-equity rails went live in Aug 2026, and in a
+// money-management business the investing product is the product, not a later upsell.
+const RAMP0=[0.60,0.85,1.00,1.00];
 const SAL={eng:150000,cs:57000,lead:112000,legal:135000,cyber:190000,comp:130000};
 const infraBase=6000*12, infraGrowth=0.15, termG=0.04, stageDsc=0.65, HORIZON=60, REGCAP=6000000;
 
@@ -339,6 +357,12 @@ function buildGrid(){
     GROWTH[s.key].map((v,j)=>j===0?'<td style="color:#aaa">base year</td>':
       `<td><input type="number" id="gr_${i}_${j}" value="${(v*100).toFixed(0)}" step="5">%</td>`).join('')+'</tr>';});
   $('t_growth').innerHTML=g+'</tbody>';
+  let a='<thead><tr><th>Vaulta Invest availability</th>'+STAGES.map(s=>`<th>${s}</th>`).join('')+'</tr></thead><tbody>'+
+    '<tr><td><span class="segname">% of each segment\'s adoption ceiling</span>'+
+    '<span class="segtag">Live from seed — Dinari\'s rails went live Aug 2026</span></td>'+
+    RAMP0.map((v,j)=>`<td><input type="number" id="ramp_${j}" value="${(v*100).toFixed(0)}" step="5">%</td>`).join('')+
+    '</tr></tbody>';
+  $('t_ramp').innerHTML=a;
 }
 function readSegs(){
   return SEG.map((s,i)=>{
@@ -348,6 +372,10 @@ function readSegs(){
     o.entry=val(`g_${i}_entry`);
     o.growth=[0,1,2,3].map(j=>j===0?0:val(`gr_${i}_${j}`)/100);
     return o;});
+}
+function readRamp(){
+  return [0,1,2,3].map(j=>{ const e=document.getElementById(`ramp_${j}`);
+    return e?+e.value/100:RAMP0[j]; });
 }
 
 // ═══════════ MODEL ═══════════
@@ -363,6 +391,7 @@ function model(){
   const intLic=val('i_intlic'), mktsY10=val('i_mkts');
   const WACC=val('i_wacc'), ltvWacc=val('i_ltvwacc'), exitM=val('i_exitm'), survival=val('i_surv');
   const segs=readSegs();
+  const RAMP=readRamp();
   const pv=(y,a,b,c,d)=>[a,b,c,d][stageOf(y)];
 
   // ── customers by segment by year ──
@@ -385,13 +414,16 @@ function model(){
     return base*(1-Math.pow(1-effChurn(i,y),12)); };
   const grossAdds=(i,y)=>netAdds(i,y)+churnedY(i,y);
   // survival-weighted LTV over the horizon, first 12 months at churn1 then churnM
+  const HZ=val('i_horizon');
   const ltvOf=(net,c1,cM,mdisc)=>{ let surv=1,pv=0;
-    for(let t=1;t<=HORIZON;t++){ pv+=net*surv/Math.pow(1+mdisc,t);
+    for(let t=1;t<=HZ;t++){ pv+=net*surv/Math.pow(1+mdisc,t);
       surv*=(1-(t<=12?c1:cM)); }
     return pv; };
   const lifeOf=(c1,cM)=>{ let surv=1,L=0;
-    for(let t=1;t<=HORIZON;t++){ L+=surv; surv*=(1-(t<=12?c1:cM)); }
+    for(let t=1;t<=HZ;t++){ L+=surv; surv*=(1-(t<=12?c1:cM)); }
     return L; };
+  // share of the cohort still active when the cap bites — shows how much value is truncated
+  const survAtCap=(c1,cM)=>Math.pow(1-c1,Math.min(12,HZ))*Math.pow(1-cM,Math.max(0,HZ-12));
   // CAC in the grid is per FUNDED customer, matching how Chime ($109) and Nubank ($7.40)
   // report it — the signups that never funded are already inside those numbers. The funding
   // rate is therefore a diagnostic (implied spend per signup), not a second multiplier.
@@ -408,7 +440,7 @@ function model(){
     const qRet=Math.pow(1+Math.max(-0.99,mktRet-s.aumfee),0.25)-1;
     for(let q=1;q<=NQ;q++){ const y=Math.ceil(q/4);
       const qCh=1-Math.pow(1-effChurn(i,y),3);
-      S.users[q]=qCust[i][q]*s.adopt*RAMP[Math.min(y,NY)-1];
+      S.users[q]=qCust[i][q]*s.adopt*RAMP[stageOf(y)];
       const surv=q===1?0:S.users[q-1]*(1-qCh);
       const gn=Math.max(0,S.users[q]-surv), open=q===1?0:S.close[q-1];
       S.roll[q]=gn*s.roll; S.con[q]=S.users[q]*s.contrib*3;
@@ -482,6 +514,7 @@ function model(){
             perSignup:cacPerSignup(i),
             ratio:ec>0?ltv/ec:0,payback:net>0?ec/net:Infinity,
             aumShare:net>0?aumMo/net:0,life:lifeOf(s.churn1,s.churnM),
+            survCap:survAtCap(s.churn1,s.churnM),
             yr1Churn:1-Math.pow(1-s.churn1,12), matChurn:1-Math.pow(1-s.churnM,12)};
   }
   function blendY(y){
@@ -532,7 +565,7 @@ function model(){
 }
 
 // ═══════════ RENDER ═══════════
-let chPL=null,chCons=null,chMix=null,chCon=null;
+let chPL=null,chCons=null,chMix=null,chCon=null,chAum=null,chFlow=null;
 function render(){
   const L={l_tbill:fP2(val('i_tbill')),l_sleeve:fP(val('i_sleeve')),
    l_effrwd:fP2(val('i_tbill')*(1-val('i_sleeve'))),l_qrf:fP2(val('i_qrf')),
@@ -543,7 +576,8 @@ function render(){
    l_allsal:fD(val('i_all_sal')),l_csratio:fN(val('i_csratio')),l_ga:fP(val('i_gapct')),
    l_infra:fD2(val('i_infra')),l_kyc:fD2(val('i_kyc')),l_intlic:fD(val('i_intlic')),
    l_mkts:val('i_mkts'),l_ben:fP(val('i_benefits')),l_wacc:fP(val('i_wacc')),
-   l_ltvwacc:fP(val('i_ltvwacc')),l_exitm:val('i_exitm')+'x',l_surv:fP(val('i_surv'))};
+   l_ltvwacc:fP(val('i_ltvwacc')),l_horizon:val('i_horizon')+' mo',
+   l_exitm:val('i_exitm')+'x',l_surv:fP(val('i_surv'))};
   for(const k in L) if($(k)) $(k).textContent=L[k];
 
   const m=model(), Y=m.years, y10=Y[NY-1], u=y10.ue;
@@ -590,6 +624,36 @@ function render(){
    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:9},boxWidth:10}},
     tooltip:{callbacks:{label:c=>' '+c.dataset.label+': $'+c.parsed.y.toFixed(2)+'M'}}},
     scales:{x:{stacked:true,ticks:{font:{size:9}}},y:{stacked:true,ticks:{callback:v=>'$'+v+'M',font:{size:9}},grid:{color:'#eee'}}}}});
+  if(chAum)chAum.destroy();
+  chAum=new Chart($('ch_aum'),{data:{labels,datasets:[
+   {type:'bar',label:'Total AUM',data:Y.map(y=>+(y.A.close/1e6).toFixed(1)),
+    backgroundColor:'rgba(112,173,71,.85)',yAxisID:'y',order:2},
+   {type:'bar',label:'Wallet balances',data:Y.map(y=>+(y.bal/1e6).toFixed(1)),
+    backgroundColor:'rgba(31,78,121,.55)',yAxisID:'y',order:3},
+   {type:'line',label:'AUM per investor ($)',data:Y.map(y=>y.A.users?Math.round(y.A.close/y.A.users):0),
+    borderColor:'#ED7D31',borderWidth:2,fill:false,tension:.3,yAxisID:'y1',order:1}]},
+   options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top',labels:{font:{size:9},boxWidth:10}},
+     tooltip:{callbacks:{label:c=>c.dataset.yAxisID==='y1'
+       ?' '+c.dataset.label+': $'+c.parsed.y.toLocaleString()
+       :' '+c.dataset.label+': $'+c.parsed.y.toFixed(0)+'M'}}},
+    scales:{y:{position:'left',ticks:{callback:v=>'$'+v+'M',font:{size:9}},grid:{color:'#eee'}},
+            y1:{position:'right',ticks:{callback:v=>'$'+(v/1000).toFixed(1)+'K',font:{size:9}},grid:{display:false}},
+            x:{ticks:{font:{size:9}}}}}});
+
+  if(chFlow)chFlow.destroy();
+  chFlow=new Chart($('ch_flow'),{type:'bar',data:{labels,datasets:[
+   {label:'Rollovers at signup',data:Y.map(y=>+(y.A.roll/1e6).toFixed(2)),backgroundColor:'rgba(46,117,182,.85)'},
+   {label:'Contributions',data:Y.map(y=>+(y.A.con/1e6).toFixed(2)),backgroundColor:'rgba(112,173,71,.85)'},
+   {label:'Market return',data:Y.map(y=>+(y.A.ret/1e6).toFixed(2)),backgroundColor:'rgba(255,196,87,.9)'},
+   {label:'Redemptions',data:Y.map(y=>+(y.A.red/1e6).toFixed(2)),backgroundColor:'rgba(237,125,49,.8)'},
+   {label:'Churn leakage',data:Y.map(y=>+(y.A.leak/1e6).toFixed(2)),backgroundColor:'rgba(192,0,0,.75)'}]},
+   options:{responsive:true,maintainAspectRatio:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top',labels:{font:{size:9},boxWidth:10}},
+     tooltip:{callbacks:{label:c=>' '+c.dataset.label+': $'+c.parsed.y.toFixed(1)+'M'}}},
+    scales:{x:{stacked:true,ticks:{font:{size:9}}},
+            y:{stacked:true,ticks:{callback:v=>'$'+v+'M',font:{size:9}},grid:{color:'#eee'}}}}});
+
   if(chCon)chCon.destroy();
   chCon=new Chart($('ch_con'),{type:'line',data:{labels,datasets:[
    {label:'Revenue / customer / mo',data:Y.map(y=>+y.ue.rev.toFixed(2)),borderColor:'#2E75B6',fill:false,tension:.3},
@@ -645,7 +709,8 @@ function renderUnit(m){
   h+=r('Churn /mo — mature',(x,i)=>fP2(m.segs[i].churnM),'—');
   h+=r('First-year churn (annual)',x=>fP(x.yr1Churn),'—','sub-row');
   h+=r('Mature churn (annual)',x=>fP(x.matChurn),'—','sub-row');
-  h+=r('Expected life (months, capped 60)',x=>x.life.toFixed(0),'—');
+  h+=r('Expected life (months, capped)',x=>x.life.toFixed(0),'—');
+  h+=r('Still active at the cap',x=>fP(x.survCap),'—','sub-row');
   h+=r('AUM fee (gross)',(x,i)=>fP2(m.segs[i].aumfee),'—');
   h+=r('AUM fee (net of platform)',(x,i)=>fP2(m.netFeeOf(m.segs[i])),'—','hl');
   h+=r('AUM per investor',x=>fD(x.perInv),'—');
