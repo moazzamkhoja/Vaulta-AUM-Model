@@ -334,12 +334,22 @@
   <p class="sub">Quarterly roll-forward per segment.</p>
   <div class="sec"><h3>The engine</h3>
     <div class="formula">Closing AUM = Opening
-            + rollover at signup   (gross new investors × rollover amount)
             + contributions        (investors × monthly contribution × 3)
             − redemptions          (opening × redemption rate ÷ 4)
             − churn leakage        (opening × quarterly churn × liquidation share)
-            + market return        (on opening plus half of inflows, net of the AUM fee)</div></div>
-  <div class="sec"><h3>Roll-forward by year</h3><div class="scroll"><table id="t_roll"></table></div></div>
+            + market return        (on opening plus half of contributions, net of the AUM fee)</div>
+    <p class="note">There is no initial transfer — the balance is built purely from the monthly contribution and the
+    return on it.</p></div>
+  <div class="sec"><h3>Roll-forward by year</h3><div class="scroll"><table id="t_roll"></table></div>
+    <p class="note"><b>On outflows and switching costs.</b> Total outflow settles near <b>13% of opening AUM</b> a year
+    at maturity — roughly 7 points of voluntary redemption and 6 from customers who leave the wallet and liquidate,
+    not the 20% it can look like. The early years read far worse (43% in Year 2) purely because the opening balance is
+    tiny against the flows; that is a small-base artefact, not an attrition rate. Cross-check: AUM per investor
+    compounds at about <b>10.8% a year</b> here, against the <b>12.5%</b> Acorns actually delivered between 2022 and
+    2026 — so if anything this is mildly conservative. One caution on the switching-cost intuition: it is <i>weaker</i>
+    here than in traditional brokerage, not stronger. Tokenized shares in a self-custody wallet move without an ACATS
+    transfer, so the assets are more portable, not less. What stickiness exists differs by segment — a crypto-native
+    customer can move assets trivially, while an emerging-market saver often has no local alternative at all.</p></div>
   <div class="sec"><h3>AUM fee vs T-bill sleeve</h3><div class="formula" id="f_algebra"></div>
     <div class="scroll"><table id="t_cross"></table></div></div>
 </div></div>
@@ -934,7 +944,13 @@ function renderAum(m){
    row('− Redemptions',Y.map(y=>fM(y.A.red)),'sub-row')+row('− Churn leakage',Y.map(y=>fM(y.A.leak)),'sub-row')+
    row('+ Market return',Y.map(y=>fM(y.A.ret)),'sub-row')+
    row('CLOSING AUM',Y.map(y=>fM(y.A.close)),'bold rule')+
+   row('outflow as % of opening',Y.map(y=>y.A.open>0
+      ?fP((Math.abs(y.A.red)+Math.abs(y.A.leak))/y.A.open):'—'),'sub-row')+
+   row('return as % of opening',Y.map(y=>y.A.open>0?fP(y.A.ret/y.A.open):'—'),'sub-row')+
    row('AUM per investor',Y.map(y=>y.A.users?fD(y.A.close/y.A.users):'—'),'bold')+
+   row('AUM per investor growth',Y.map((y,i)=>{ if(i===0||!y.A.users) return '—';
+      const p=Y[i-1]; if(!p.A.users||p.A.close<=0) return '—';
+      return fP((y.A.close/y.A.users)/(p.A.close/p.A.users)-1); }),'sub-row')+
    row('AUM fee net to Vaulta',Y.map(y=>fM(y.aum)),'bold hl')+'</tbody>';
   $('f_algebra').textContent=
    'A wallet dollar earns   t-bill × sleeve            = '+fP2(m.walletYield)+' / yr\n'+
