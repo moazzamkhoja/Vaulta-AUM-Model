@@ -117,24 +117,30 @@
     <div class="slider-row"><label>QR / Solana Pay Fee <span id="l_qrf">0.50%</span></label>
       <div class="hint">Direct settlement — real margin. Card and Apple&nbsp;Pay interchange is a pass-through and is excluded from the P&amp;L entirely.</div>
       <input type="range" id="i_qrf" min="0" max="0.02" step="0.00025" value="0.005"></div>
-    <div class="slider-row"><label>Share of Spend Through QR <span id="l_qrshare">25%</span></label>
-      <div class="hint">Only spend at merchants accepting Solana Pay earns the fee. The rest runs on card rails and is pass-through. This is an acceptance-coverage assumption, not a customer behaviour one.</div>
-      <input type="range" id="i_qrshare" min="0.01" max="1" step="0.01" value="0.25"></div>
+    <div class="slider-row"><label>Share of Spend Through QR <span id="l_qrshare">10%</span></label>
+      <div class="hint">Only spend at merchants accepting Solana Pay earns the fee; the rest runs on card rails and is
+        pass-through. QR is not how most people pay, so this is deliberately low — payments should not be carrying
+        this model.</div>
+      <input type="range" id="i_qrshare" min="0.01" max="1" step="0.01" value="0.10"></div>
 
     <hr class="div"><h3>③ Vaulta Invest</h3>
-    <div class="slider-row"><label>AUM Fee (gross) <span id="l_aumfee">0.25%</span></label>
-      <div class="hint">Betterment Basic and Wealthfront both charge 0.25%.</div>
-      <input type="range" id="i_aumfee" min="0.0005" max="0.02" step="0.00025" value="0.0025"></div>
-    <div class="slider-row"><label>Dinari Revenue Share <span id="l_dinari">30%</span></label>
-      <div class="hint">Paid to the partner broker-dealer. Vaulta nets <b id="l_netfee">0.175%</b>. Not disclosed publicly — a judgement.</div>
-      <input type="range" id="i_dinari" min="0" max="0.60" step="0.05" value="0.30"></div>
+    <div class="slider-row"><label>Dinari Platform Fee <span id="l_dinari">0.15%</span></label>
+      <div class="hint">A white-label platform charges a spread in basis points, not a share of whatever you charge.
+        Deducted from each segment's own AUM fee. Not disclosed publicly — a judgement.</div>
+      <input type="range" id="i_dinari" min="0" max="0.01" step="0.00025" value="0.0015"></div>
+    <div class="hint" style="margin-bottom:10px"><b>The AUM fee is now per segment</b> — set it on the Customer
+      Profiles tab. US segments sit at Betterment's 0.25%; International at 1.25%, because their alternative is a
+      local bank, not Vanguard. A wallet dollar earns <b id="l_walletyield">0.96%</b> a year, so an AUM fee below
+      that plus the platform fee makes invested dollars worth <i>less</i> than idle cash.</div>
     <div class="slider-row"><label>S&amp;P 500 Annual Return <span id="l_mktret">8.5%</span></label>
       <div class="hint">Historical ~10.4% nominal; forward forecasts 3.9–5.9%.</div>
       <input type="range" id="i_mktret" min="0" max="0.14" step="0.005" value="0.085"></div>
-    <div class="slider-row"><label>Redemption / Leakage <span id="l_redeem">8.0%</span></label>
-      <input type="range" id="i_redeem" min="0" max="0.30" step="0.01" value="0.08"></div>
-    <div class="slider-row"><label>Churned Investors Who Liquidate <span id="l_liq">100%</span></label>
-      <input type="range" id="i_liq" min="0" max="1" step="0.05" value="1"></div>
+    <div class="slider-row"><label>Redemption / Leakage <span id="l_redeem">6.0%</span></label>
+      <input type="range" id="i_redeem" min="0" max="0.30" step="0.01" value="0.06"></div>
+    <div class="slider-row"><label>Churned Investors Who Liquidate <span id="l_liq">25%</span></label>
+      <div class="hint">Leaving the wallet is not the same as closing a brokerage account. At 100% the outflow
+        was 2.6x the investment return, which is what stopped balances compounding.</div>
+      <input type="range" id="i_liq" min="0" max="1" step="0.05" value="0.25"></div>
 
     <hr class="div"><h3>④ Cost Structure</h3>
     <div class="hint" style="margin-bottom:8px">Marketing is CAC × gross adds — there is no separate brand line and no BD deal engine. One alliance hire only.</div>
@@ -280,13 +286,17 @@
 // ═══════════ SEGMENTS ═══════════
 const SEG=[
  {key:'ub', name:"Unsatisfied Banked", tag:"Chime's market — overdraft-weary, fee-hostile",
-  cac:55, seedCust:700, startYear:1, bal:2500, spend:1.20, adopt:0.25, contrib:50, roll:250, churn:0.0225, fund:0.65},
+  cac:55, seedCust:700, startYear:1, bal:2500, spend:1.20, adopt:0.30, contrib:60, roll:750,
+  churn1:0.040, churnM:0.010, fund:0.65, aumfee:0.0025},
  {key:'un', name:"Unbanked", tag:"4.2% of US households — education and onboarding barrier",
-  cac:120, seedCust:0, startYear:2, bal:800, spend:2.00, adopt:0.05, contrib:10, roll:0, churn:0.0350, fund:0.40},
+  cac:120, seedCust:0, startYear:2, bal:800, spend:2.00, adopt:0.05, contrib:10, roll:0,
+  churn1:0.060, churnM:0.020, fund:0.40, aumfee:0.0025},
  {key:'ce', name:"Crypto Enthusiast", tag:"Already self-custodying — wants yield plus equities",
-  cac:45, seedCust:300, startYear:1, bal:6000, spend:0.40, adopt:0.70, contrib:200, roll:2000, churn:0.0150, fund:0.80},
- {key:'in', name:"International (EM)", tag:"Turkey, LatAm, South Asia — dollar and US-equity demand",
-  cac:25, seedCust:0, startYear:2, bal:1800, spend:0.15, adopt:0.60, contrib:75, roll:500, churn:0.0200, fund:0.55}];
+  cac:45, seedCust:300, startYear:1, bal:6000, spend:0.40, adopt:0.75, contrib:250, roll:4000,
+  churn1:0.030, churnM:0.008, fund:0.80, aumfee:0.0050},
+ {key:'in', name:"International (EM)", tag:"Turkey, LatAm, South Asia — this is an investment account, not a wallet",
+  cac:25, seedCust:0, startYear:2, bal:1200, spend:0.12, adopt:0.75, contrib:120, roll:2000,
+  churn1:0.035, churnM:0.009, fund:0.55, aumfee:0.0125}];
 const ENTRY={ub:0, un:500, ce:0, in:1500};      // customers in the year a segment switches on
 const GROWTH={                                   // annual growth by stage
  ub:[0,2.50,1.20,0.45], un:[0,1.50,1.00,0.40],
@@ -307,17 +317,20 @@ const $=id=>document.getElementById(id); const val=id=>+$(id).value;
 
 // ═══════════ EDITABLE GRIDS ═══════════
 const GCOLS=[
- ['cac','CAC $ / signup','1'],['seedCust','Seed customers','10'],['startYear','Start year','1'],
- ['bal','Avg balance $','50'],['spend','Spend % of balance','0.01'],['adopt','AUM adoption %','1'],
+ ['cac','CAC $ / funded','1'],['seedCust','Seed customers','10'],['startYear','Start year','1'],
+ ['bal','Avg wallet balance $','50'],['spend','Spend % of balance','0.01'],['adopt','AUM adoption %','1'],
  ['contrib','AUM contribution $/mo','5'],['roll','Rollover at signup $','50'],
- ['churn','Monthly churn %','0.05'],['fund','Funding rate %','1']];
-const PCT_KEYS=['spend','adopt','churn','fund'];
+ ['aumfee','AUM fee %/yr','0.05'],
+ ['churn1','Churn %/mo — year 1','0.1'],['churnM','Churn %/mo — mature','0.1'],
+ ['fund','Funding rate %','1']];
+const PCT_KEYS=['spend','adopt','churn1','churnM','fund','aumfee'];
 function buildGrid(){
   let h='<thead><tr><th>Segment</th>'+GCOLS.map(c=>`<th>${c[1]}</th>`).join('')+'<th>Entry customers</th></tr></thead><tbody>';
   SEG.forEach((s,i)=>{
     h+=`<tr><td><span class="segname">${s.name}</span><span class="segtag">${s.tag}</span></td>`+
       GCOLS.map(([k,,step])=>{
-        const v=PCT_KEYS.includes(k)?(s[k]*100).toFixed(k==='churn'?2:0):s[k];
+        const dp=(k==='churn1'||k==='churnM'||k==='aumfee')?2:0;
+        const v=PCT_KEYS.includes(k)?(s[k]*100).toFixed(dp):s[k];
         return `<td><input type="number" id="g_${i}_${k}" value="${v}" step="${step}"></td>`;}).join('')+
       `<td><input type="number" id="g_${i}_entry" value="${ENTRY[s.key]}" step="50"></td></tr>`;});
   $('t_grid').innerHTML=h+'</tbody>';
@@ -340,8 +353,9 @@ function readSegs(){
 // ═══════════ MODEL ═══════════
 function model(){
   const tbill=val('i_tbill'), sleeve=val('i_sleeve'), qrf=val('i_qrf'), qrShare=val('i_qrshare');
-  const aumFeeGross=val('i_aumfee'), dinari=val('i_dinari');
-  const aumFeeNet=aumFeeGross*(1-dinari);
+  const dinariBps=val('i_dinari');
+  // per-segment gross fee; Dinari's platform spread is deducted in basis points
+  const netFeeOf=s=>Math.max(0, s.aumfee-dinariBps);
   const mktRet=val('i_mktret'), redeem=val('i_redeem'), liq=val('i_liq');
   const csRatio=val('i_csratio'), gaPct=val('i_gapct'), infraPC=val('i_infra');
   const kycCost=val('i_kyc'), benefits=val('i_benefits');
@@ -360,10 +374,24 @@ function model(){
   const total=y=>segs.reduce((a,s,i)=>a+cust[i][y],0);
   const share=(i,y)=>total(y)>0?cust[i][y]/total(y):0;
 
+  // Two-stage churn: cohorts churn hard in year 1, then settle. The base's blended
+  // rate therefore depends on how much of it is first-year, which fast growth raises.
   const netAdds=(i,y)=> y===1?cust[i][1]:Math.max(0,cust[i][y]-cust[i][y-1]);
+  const newShare=(i,y)=>{ const tot=cust[i][y]; if(tot<=0) return 1;
+    return Math.min(1, Math.max(0, netAdds(i,y)/tot)); };
+  const effChurn=(i,y)=>{ const s=segs[i], w=newShare(i,y);
+    return w*s.churn1+(1-w)*s.churnM; };
   const churnedY=(i,y)=>{ const base=y===1?cust[i][1]/2:cust[i][y-1];
-    return base*(1-Math.pow(1-segs[i].churn,12)); };
+    return base*(1-Math.pow(1-effChurn(i,y),12)); };
   const grossAdds=(i,y)=>netAdds(i,y)+churnedY(i,y);
+  // survival-weighted LTV over the horizon, first 12 months at churn1 then churnM
+  const ltvOf=(net,c1,cM,mdisc)=>{ let surv=1,pv=0;
+    for(let t=1;t<=HORIZON;t++){ pv+=net*surv/Math.pow(1+mdisc,t);
+      surv*=(1-(t<=12?c1:cM)); }
+    return pv; };
+  const lifeOf=(c1,cM)=>{ let surv=1,L=0;
+    for(let t=1;t<=HORIZON;t++){ L+=surv; surv*=(1-(t<=12?c1:cM)); }
+    return L; };
   // CAC in the grid is per FUNDED customer, matching how Chime ($109) and Nubank ($7.40)
   // report it — the signups that never funded are already inside those numbers. The funding
   // rate is therefore a diagnostic (implied spend per signup), not a second multiplier.
@@ -376,9 +404,10 @@ function model(){
     const base= y<=s.startYear ? (cust[i][y]||0)*0.25 : cust[i][y-1];
     qCust[i][q]= cust[i][y]<=0?0: Math.max(base,0.0001)*Math.pow(Math.max(cust[i][y],1)/Math.max(base,1),qin/4); }});
   const segA=segs.map(()=>({users:[],open:[],close:[],avg:[],roll:[],con:[],red:[],leak:[],ret:[]}));
-  const qRet=Math.pow(1+Math.max(-0.99,mktRet-aumFeeGross),0.25)-1;
-  segs.forEach((s,i)=>{ const S=segA[i], qCh=1-Math.pow(1-s.churn,3);
+  segs.forEach((s,i)=>{ const S=segA[i];
+    const qRet=Math.pow(1+Math.max(-0.99,mktRet-s.aumfee),0.25)-1;
     for(let q=1;q<=NQ;q++){ const y=Math.ceil(q/4);
+      const qCh=1-Math.pow(1-effChurn(i,y),3);
       S.users[q]=qCust[i][q]*s.adopt*RAMP[Math.min(y,NY)-1];
       const surv=q===1?0:S.users[q-1]*(1-qCh);
       const gn=Math.max(0,S.users[q]-surv), open=q===1?0:S.close[q-1];
@@ -398,9 +427,14 @@ function model(){
   const nim=y=>balY(y)*tbill*sleeve;
   const rewards=y=>balY(y)*tbill*(1-sleeve);
   const qrRev=y=>segs.reduce((a,s,i)=>a+cust[i][y]*s.bal*s.spend*12*qrShare*qrf,0);
-  const aumRev=y=>aumY(y).avg*aumFeeNet;
-  const aumGross=y=>aumY(y).avg*aumFeeGross;
+  const segAvg=(i,y)=>{ const qs=[1,2,3,4].map(k=>(y-1)*4+k);
+    return qs.reduce((a,q)=>a+segA[i].avg[q],0)/4; };
+  const aumRev=y=>segs.reduce((a,s,i)=>a+segAvg(i,y)*netFeeOf(s),0);
+  const aumGross=y=>segs.reduce((a,s,i)=>a+segAvg(i,y)*s.aumfee,0);
   const dinariFee=y=>aumGross(y)-aumRev(y);
+  // AUM-weighted blended net fee, for the crossover ratio
+  const blendedNetFee=y=>{ const tot=segs.reduce((a,s,i)=>a+segAvg(i,y),0);
+    return tot>0?aumRev(y)/tot:0; };
   const totalRev=y=>nim(y)+qrRev(y)+aumRev(y);
 
   // ── costs ──
@@ -438,17 +472,17 @@ function model(){
     const perInv=S.users[q]>0?S.close[q]/S.users[q]:0;
     const nimMo=s.bal*tbill*sleeve/12;
     const qrMo=s.bal*s.spend*qrShare*qrf;
-    const aumMo=perInv*s.adopt*aumFeeNet/12;
+    const aumMo=perInv*s.adopt*netFeeOf(s)/12;
     const rev=nimMo+qrMo+aumMo;
     const sup=supportPC(), inf=infraPC;
     const net=rev-sup-inf;
-    const d=(1-s.churn)/(1+mdisc);
-    const ltv=net/(1+mdisc)*(1-Math.pow(d,HORIZON))/(1-d);
+    const ltv=ltvOf(net,s.churn1,s.churnM,mdisc);
     const ec=effCAC(i);
     return {perInv,nimMo,qrMo,aumMo,rev,sup,inf,net,ltv,cac:s.cac,eff:ec,
             perSignup:cacPerSignup(i),
             ratio:ec>0?ltv/ec:0,payback:net>0?ec/net:Infinity,
-            aumShare:net>0?aumMo/net:0,life:1/s.churn};
+            aumShare:net>0?aumMo/net:0,life:lifeOf(s.churn1,s.churnM),
+            yr1Churn:1-Math.pow(1-s.churn1,12), matChurn:1-Math.pow(1-s.churnM,12)};
   }
   function blendY(y){
     const w=i=>share(i,y);
@@ -490,9 +524,11 @@ function model(){
     mgmtHeads:mgmtHeads(y),legalHeads:legalHeads(y),cyberHeads:cyberHeads(y),
     compHeads:compHeads(y),A:aumY(y),ue:blendY(y),cash:cash[y],
     grossAdds:segs.reduce((a,s,i)=>a+grossAdds(i,y),0)});
+  const bnf=blendedNetFee(NY);
   return {years,segs,ueSegY,blendY,effCAC,EV,raEV,beYear,pvSum,pvTV,eb10,
-          seedRaise,serARaise,serBRaise,serCRaise,tbill,sleeve,aumFeeNet,aumFeeGross,
-          dinariShare:dinari,required:(tbill*sleeve)/aumFeeNet,share,cust};
+          seedRaise,serARaise,serBRaise,serCRaise,tbill,sleeve,
+          aumFeeNet:bnf,dinariBps,netFeeOf,walletYield:tbill*sleeve,
+          required:bnf>0?(tbill*sleeve)/bnf:Infinity,share,cust};
 }
 
 // ═══════════ RENDER ═══════════
@@ -501,8 +537,8 @@ function render(){
   const L={l_tbill:fP2(val('i_tbill')),l_sleeve:fP(val('i_sleeve')),
    l_effrwd:fP2(val('i_tbill')*(1-val('i_sleeve'))),l_qrf:fP2(val('i_qrf')),
    l_qrshare:fP(val('i_qrshare')),
-   l_aumfee:fP2(val('i_aumfee')),l_dinari:fP(val('i_dinari')),
-   l_netfee:fP2(val('i_aumfee')*(1-val('i_dinari'))),l_mktret:fP(val('i_mktret')),
+   l_dinari:fP2(val('i_dinari')),
+   l_walletyield:fP2(val('i_tbill')*val('i_sleeve')),l_mktret:fP(val('i_mktret')),
    l_redeem:fP(val('i_redeem')),l_liq:fP(val('i_liq')),l_alliance:val('i_alliance'),
    l_allsal:fD(val('i_all_sal')),l_csratio:fN(val('i_csratio')),l_ga:fP(val('i_gapct')),
    l_infra:fD2(val('i_infra')),l_kyc:fD2(val('i_kyc')),l_intlic:fD(val('i_intlic')),
@@ -605,8 +641,13 @@ function renderUnit(m){
   const U=m.segs.map((s,i)=>m.ueSegY(i,y10)), b=m.blendY(y10);
   const r=(l,f,bv,cls)=>`<tr class="${cls||''}"><td>${l}</td>`+U.map(f).map(x=>`<td>${x}</td>`).join('')+`<td>${bv}</td></tr>`;
   h+=r('Avg balance',(x,i)=>fD(m.segs[i].bal),'—');
-  h+=r('Monthly churn',(x,i)=>fP2(m.segs[i].churn),'—');
-  h+=r('Implied life (months)',x=>x.life.toFixed(0),'—');
+  h+=r('Churn /mo — year 1',(x,i)=>fP2(m.segs[i].churn1),'—');
+  h+=r('Churn /mo — mature',(x,i)=>fP2(m.segs[i].churnM),'—');
+  h+=r('First-year churn (annual)',x=>fP(x.yr1Churn),'—','sub-row');
+  h+=r('Mature churn (annual)',x=>fP(x.matChurn),'—','sub-row');
+  h+=r('Expected life (months, capped 60)',x=>x.life.toFixed(0),'—');
+  h+=r('AUM fee (gross)',(x,i)=>fP2(m.segs[i].aumfee),'—');
+  h+=r('AUM fee (net of platform)',(x,i)=>fP2(m.netFeeOf(m.segs[i])),'—','hl');
   h+=r('AUM per investor',x=>fD(x.perInv),'—');
   h+=r('T-bill NIM',x=>fD2(x.nimMo),fD2(b.nimMo));
   h+=r('QR payments',x=>fD2(x.qrMo),fD2(b.qrMo));
@@ -748,8 +789,11 @@ function renderAum(m){
    row('CLOSING AUM',Y.map(y=>fM(y.A.close)),'bold rule')+
    row('AUM per investor',Y.map(y=>y.A.users?fD(y.A.close/y.A.users):'—'),'bold')+
    row('AUM fee net to Vaulta',Y.map(y=>fM(y.aum)),'bold hl')+'</tbody>';
-  $('f_algebra').textContent='AUM × net fee  =  balances × t-bill rate × sleeve\n'+
-   'AUM ÷ balances  =  ('+fP2(m.tbill)+' × '+fP(m.sleeve)+') ÷ '+fP2(m.aumFeeNet)+'  =  '+fX(m.required);
+  $('f_algebra').textContent=
+   'A wallet dollar earns   t-bill × sleeve            = '+fP2(m.walletYield)+' / yr\n'+
+   'An AUM dollar earns     blended net fee            = '+fP2(m.aumFeeNet)+' / yr\n'+
+   '                        ratio                      = '+fX(m.walletYield/(m.aumFeeNet||1e-9))+'\n\n'+
+   'So AUM ÷ balances must exceed '+fX(m.required)+' before the AUM line matches the sleeve.';
   $('t_cross').innerHTML='<thead><tr><th>Metric</th>'+Y.map(y=>`<th>${2026+y.y}</th>`).join('')+'</tr></thead><tbody>'+
    row('Total AUM',Y.map(y=>fM(y.A.close)))+row('Wallet balances',Y.map(y=>fM(y.bal)))+
    row('AUM ÷ balances',Y.map(y=>fX(y.bal>0?y.A.close/y.bal:0)),'bold hl')+
@@ -777,14 +821,20 @@ const RESEARCH=[
  ["AUM fee 0.25% · return 8.5%","Betterment Basic and Wealthfront both charge 0.25%. S&P 500 historical nominal total return is ~10.4% since 1957 and over the last 30 years; forward forecasts are 3.9–5.9% (Vanguard) and ~5% (BlackRock).",
   "<a href='https://www.officialdata.org/us/stocks/s-p-500' target='_blank'>officialdata.org</a> · <a href='https://www.unbiased.com/discover/financial-advice/best-robo-advisors' target='_blank'>unbiased.com</a>"],
  ["Contribution $50/mo baseline","Acorns reports most customers investing roughly $50–60/month into core accounts, on a ~$2,142 average balance across 14m registered users.",
-  "<a href='https://investingintheweb.com/brokers/acorn-statistics/' target='_blank'>investingintheweb.com</a>"]];
+  "<a href='https://investingintheweb.com/brokers/acorn-statistics/' target='_blank'>investingintheweb.com</a>"],
+ ["Churn — two-stage, 3–6%/mo year 1 then 0.8–2%/mo","Neobank churn is front-loaded, so a flat monthly rate is the wrong shape. <b>Chime's M12 retention is 28%</b> — roughly 72% of signups gone inside a year. Consumer fintech generally runs <b>3–5% monthly churn</b>, and the fintech benchmark is 90–95% monthly retention with top performers above 94%. But digital-only banks show the <b>lowest churn of any banking segment at 10.8%</b> once customers are established — about 0.94%/month. The model therefore uses a year-1 rate and a separate mature rate per segment, and blends them by how much of the base is first-year.",
+  "<a href='https://www.goodwatercap.com/perspectives/understanding-chime-the-largest-neobank-in-the-us' target='_blank'>Goodwater on Chime</a> · <a href='https://dojobusiness.com/blogs/news/fintech-ideal-retention-rate' target='_blank'>fintech retention benchmarks</a> · <a href='https://www.mydayfinance.com/archives/39731' target='_blank'>2025 digital banking retention</a>"],
+ ["Referral effect on churn","Referred neobank customers churn 20–30% less in the first 12 months than organic ones — which is part of why Nubank's 80–90% word-of-mouth acquisition also produces better retention, not just cheaper CAC.",
+  "<a href='https://growsurf.com/examples/neobank-referral-programs/' target='_blank'>GrowSurf neobank referral data</a>"]];
 const FINDINGS=[
- ["International is the segment that makes this business work. It has the lowest CAC of the four ($25 against Nubank's actual $7.40), the strongest structural reason to hold dollar assets, and the highest AUM propensity — but it is also the only segment that needs licensing Vaulta does not yet have.",false],
- ["Unbanked is the weakest segment on every axis: highest CAC, lowest balance, lowest AUM adoption, highest churn and the worst funding rate. It is also a shrinking pool — the FDIC has unbanked households at 4.2% and falling. Worth serving for mission reasons; it will not carry the P&L.",true],
- ["The Dinari revenue share is the largest unsourced number in the model. At 30% it takes the effective AUM fee from 0.25% to 0.175%, which nearly doubles the ratio of AUM to wallet balances needed before the AUM line matches the sleeve.",true],
- ["Drop-outs matter more than they look. A 40% funding rate on the Unbanked segment means the effective CAC per funded customer is 2.5x the headline CAC — $300, not $120.",false],
- ["Compliance was broken out of G&A and ramped harder than the bill-pay model carried it. A money-management product has suitability and BSA/AML obligations a payments wallet does not, even riding a partner broker-dealer.",false],
- ["The sleeve remains the dominant value lever — more than AUM, more than growth. The sensitivity on the Model tab re-runs the full ten years at each setting.",true]];
+ ["<b>The AUM fee has to clear the wallet yield, or AUM cannot be the business.</b> A wallet dollar earns t-bill × sleeve = 0.96%/yr. An AUM dollar earns the segment fee less the platform spread. Price AUM below that and moving a dollar from cash into the index fund <i>destroys</i> revenue. This is why an earlier version of this model showed AUM at 3% of revenue and no sensitivity to the S&P return at all — the fee was 0.25% less a 30% revenue share, or 0.175% net, against a 0.96% wallet yield.",true],
+ ["<b>Matching Betterment's 0.25% does not survive a platform fee.</b> At 0.25% gross less a 0.15% platform spread, Vaulta keeps 0.10% — effectively nothing, and the Unsatisfied Banked segment shows it: AUM is 2% of its revenue and it returns 1.21x LTV:CAC. The segments that work are the ones priced meaningfully above the platform cost: Crypto at 0.50% and International at 1.25%.",true],
+ ["International is the segment that makes this business work, once priced correctly. Lowest CAC of the four ($25 against Nubank's actual $7.40), and at a 1.25% fee it draws 80% of its revenue from AUM and returns 4.53x LTV:CAC. Its alternative is a local bank, not Vanguard, so the fee is defensible. It is also the only segment needing licensing Vaulta does not yet have.",false],
+ ["Unbanked is the weakest segment on every axis and stays that way under every configuration tested: highest CAC, lowest balance, lowest AUM adoption, worst churn and worst funding rate, at 0.08x LTV:CAC. A shrinking pool too — the FDIC has unbanked households at 4.2% and falling. Worth serving for mission reasons; it will not carry the P&L.",true],
+ ["<b>Churn is front-loaded, and modelling it flat was wrong.</b> Chime's M12 retention is 28%; consumer fintech runs 3–5% monthly churn; but established digital-bank customers churn at only 10.8% a year. A single flat rate simultaneously understates year-1 losses and overstates mature losses, which distorts LTV in both directions. The model now carries a year-1 and a mature rate per segment.",false],
+ ["100% liquidation on churn was also wrong, and it was suppressing AUM. Assuming every departing wallet customer closes their brokerage account made outflows 2.6x the investment return, which is what prevented balances from compounding. At 25% liquidation, AUM per investor reaches $5,869 by Year 10 rather than $2,328.",false],
+ ["Payments should not be carrying this model, and at a realistic 10% QR acceptance it no longer does — payment fees fall to 19% of Year 10 revenue against 42% from AUM. At the earlier 25% acceptance payments were 51% of revenue, which made this a payments company with an investing feature.",false],
+ ["The sleeve is still a major lever, but it is no longer the only one. The two sensitivities on the Model tab re-run the full ten years at each setting.",false]];
 const REVIEW=[
  ["<b>Removed — local and enterprise BD deal engine.</b> It generated customers from merchant deals, which is a bill-pay motion, not a consumer one. It was also the reason CAC looked strange: acquisition cost was falling out of BD headcount rather than out of a per-customer number.",false],
  ["<b>Removed — brand marketing as % of revenue, and activation $ per customer.</b> Both are now inside segment CAC. Keeping them alongside CAC × gross adds would have double-counted acquisition.",false],
