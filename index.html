@@ -238,6 +238,39 @@
   <h2>Customer Profiles</h2>
   <p class="sub">Four consumer segments. Everything here is editable and drives the whole model — marketing expense is CAC × gross adds, nothing else.</p>
   <div class="callout" id="c_segnote"></div>
+  <div class="sec"><h3>What the columns mean</h3>
+    <table><tbody>
+      <tr><td style="width:190px"><b>CAC $ / funded</b></td><td style="text-align:left">Marketing cost to acquire one
+        customer who actually funds an account. Per <i>funded</i> customer, matching how Chime ($109) and Nubank ($7.40)
+        report it — the signups that never funded are already priced into those figures.</td></tr>
+      <tr><td><b>Seed customers</b></td><td style="text-align:left">How many customers this segment has in Year 1.
+        Only the two segments that launch at seed have a number here.</td></tr>
+      <tr><td><b>Start year</b></td><td style="text-align:left">The year the segment switches on. Unbanked and
+        International are 2, because onboarding/education and Reg S licensing respectively both take a build.</td></tr>
+      <tr><td><b>Entry customers</b></td><td style="text-align:left">The launch cohort for a segment that starts
+        <i>after</i> seed — the equivalent of "seed customers" for a later start. International enters at 1,500 in
+        Year 2 and grows from there; Unbanked enters at 500. Ignored for segments starting in Year 1.</td></tr>
+      <tr><td><b>Spend % of balance</b></td><td style="text-align:left">Monthly card and QR spend as a multiple of the
+        average balance. Above 100% is turnover, not drawdown — see the note below the grid.</td></tr>
+      <tr><td><b>AUM adoption %</b></td><td style="text-align:left">Share of the segment who open a Vaulta Invest
+        account at all. Multiplied by the availability ramp below.</td></tr>
+      <tr><td><b>AUM contribution $/mo</b></td><td style="text-align:left">The recurring monthly drip into the index
+        fund, once invested. The Acorns benchmark is $50–60/month.</td></tr>
+      <tr><td><b>Rollover at signup $</b></td><td style="text-align:left"><b>The lump sum transferred in from an
+        existing bank or brokerage when the investment account is opened</b> — money that already existed elsewhere,
+        as opposed to the monthly drip that builds up over time. "I'm moving my $2,000 across." This is the single
+        largest lever on total AUM, because it front-loads the balance instead of accumulating it a month at a time.</td></tr>
+      <tr><td><b>AUM fee %/yr</b></td><td style="text-align:left">Charged on invested balances, before the platform
+        spread paid to Dinari. Set per segment because their alternatives differ.</td></tr>
+      <tr><td><b>Churn %/mo — year 1 / mature</b></td><td style="text-align:left">Two-stage, because neobank churn is
+        front-loaded. Chime loses ~72% of signups in year one, but established digital-bank customers churn only
+        ~10.8% a year.</td></tr>
+      <tr><td><b>Funding rate %</b></td><td style="text-align:left"><b>The share of people who sign up and actually
+        put money in</b>, versus those who register and never deposit — the drop-out rate. Unbanked is lowest at 40%,
+        which is the onboarding barrier showing up. It is a <i>diagnostic</i> here, not a multiplier: because CAC is
+        already per funded customer, dividing by it again would double-count the drop-outs. It drives the "implied
+        spend per signup" memo on the Unit Economics tab.</td></tr>
+    </tbody></table></div>
   <div class="sec"><h3>Segment grid</h3><div class="scroll"><table class="grid" id="t_grid"></table></div>
     <p class="note">CAC is per <b>funded</b> customer, matching how Chime ($109) and Nubank ($7.40) report it — the signups
     that never funded are already inside those figures. The funding rate is a diagnostic showing implied spend per signup, not
