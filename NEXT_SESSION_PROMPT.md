@@ -24,7 +24,7 @@ against a stubbed DOM. Example: `node tools/harness.js i_vm=0.01 i_qr=0.5 i_cac=
 
 | id | Lever | Default |
 |---|---|---|
-| `i_vm` | Merchant fee, all rails | 0.75% |
+| `i_vm` | Merchant fee, all rails | 1.25% (owner set it, 14 Sept; was 0.75%) |
 | `i_qr` | QR share of spend | 10% |
 | `i_cac` | CAC per funded customer (one number) | $100 |
 | `i_cn` | Customers in Year 10 (one number) | 4.3M |
@@ -43,11 +43,11 @@ transactions × $0.13 + $0.21/customer/month issuance; QR cost = transactions ×
 
 ## At the defaults
 
-Year 10: $339M revenue (NIM 45% / payments 45% / AUM 7%), EBITDA −$44M and never positive,
-EV −$129M, LTV:CAC 1.7x, $79 revenue per customer vs Chime's $257.
+Year 10: $501M revenue (NIM 31% / payments 63% / AUM 5%), EBITDA +$109M (22%), positive from
+Year 9, EV +$137M, LTV:CAC 2.5x, $117 revenue per customer vs Chime's $257.
 
-**What crosses zero:** fee 1.0% (at 10% QR) · CAC ~$70 · fee 0.75% with 100% QR.
-**What doesn't:** the customer count. 2M → −$136M, 8.6M → −$115M. Scale is not the story.
+**Fee sensitivity at 10% QR:** 0.75% → EV −$129M · 1.0% → +$4M · 1.25% → +$137M. Each 0.25% ≈ $133M.
+**What doesn't move it:** the customer count. Scale is not the story; fee, QR and CAC are.
 
 ---
 
@@ -86,8 +86,8 @@ investment-first fifth segment, the AUM options table, the opex stress test.
 
 | | Chime | Wealthfront | Vaulta (Yr 10 defaults) |
 |---|---|---|---|
-| Revenue / customer | $257 | $261 | $79 |
-| Primary line | Interchange 69% — *it is the issuer* | Cash NIM 74% | NIM 45% / payments 45% |
-| AUM fee share | none | 25% | 7% |
+| Revenue / customer | $257 | $261 | $117 |
+| Primary line | Interchange 69% — *it is the issuer* | Cash NIM 74% | Payment contribution 63% |
+| AUM fee share | none | 25% | 5% |
 | CAC | $109 at scale | $200–400 | $93 blended |
 | Customers | 8.6M (12 yrs) | 1.4M (17 yrs) | 4.3M (10 yrs) |

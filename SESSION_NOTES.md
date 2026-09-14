@@ -49,10 +49,14 @@ its whole range. Unit economics are the story; the count is not.
 **Segment ranking is unchanged:** Crypto Enthusiast 3.4x, Unsatisfied Banked 1.7x, International
 1.4x, Unbanked 0.2x.
 
+**Owner set the fee default to 1.25%** at the end of the session (commit after 1f21222). At 10% QR,
+$100 CAC, 4.3M: Year 10 revenue $501M (payments 63%), EBITDA +$109M, positive from Year 9, EV
++$137M, LTV:CAC 2.5x, $117 per customer. Payments are now the primary line, not NIM.
+
 ## Open — for next session
 
-Nothing to build. Set the four levers to what the owner believes and read the result:
-1. Fee — 0.75% is under water; 1.0% is break-even.
+Nothing to build. Set the remaining levers to what the owner believes and read the result:
+1. Fee — set to 1.25%; 1.0% was break-even.
 2. QR share — 10% is a placeholder; what does merchant enrolment look like by year?
 3. CAC — $100 vs Chime's $109; the model needs ~$70 or a higher fee.
 4. Mix — 42% International is doing a lot of work at $60 CAC; is that real?
