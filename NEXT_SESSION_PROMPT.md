@@ -1,6 +1,6 @@
-# Next Session Prompt — Vaulta AUM Model
+# Next Session Prompt — Vaulta AUM Model v4
 
-**Copy this whole file into a new session to pick up where we left off.**
+**Copy this whole file into a new Cowork or Claude Code session to continue.**
 
 ---
 
@@ -10,85 +10,90 @@
 Live: **https://moazzamkhoja.github.io/Vaulta-AUM-Model/**
 
 `index.html` is the model and is authoritative — a single file, Chart.js from CDN, no build step.
-`Vaulta_AUM_Model_v1.xlsx` in the repo is **stale** (an early 5-year build) and should be ignored or
-regenerated. Read `SESSION_NOTES.md` first for the full decision log.
+`Vaulta_AUM_Model_v1.xlsx` is **stale**; ignore it. **HTML only. No spreadsheets.**
 
-**I want HTML, not spreadsheets.** A workbook in a repo is not something I can look at.
+Read `SESSION_NOTES.md` (14 Sept entry at the top) and `README.md` before touching anything.
 
-## The model in one paragraph
+Verify any change with `node tools/harness.js [id=value ...]` — it runs `model()` from the HTML
+against a stubbed DOM. Example: `node tools/harness.js i_cs=0.5 i_qr=0.5`.
 
-Consumer-only, 10 years, four segments, five revenue lines, two cost lines. Vaulta is a
-money-management business on-chain riding Dinari's white-label broker-dealer rails. Revenue is:
-consumer T-bill sleeve (20% of 4.8% on balances), merchant float (20% of a month's collections at a
-30% sleeve), payment margin (0.5% on all spend), card interchange (1.5%, Vaulta is the issuer), and
-the AUM fee (0.25%). Costs are a variable cost per customer plus a fixed cost derived from the
-headcount build on the Team tab. Marketing is CAC × gross adds. Year 10 reaches 4.3m customers —
-half of Chime — with $791M revenue and EBITDA positive from Year 6.
+---
 
-## The one open question: AUM
+## What was done last session (14 Sept 2026)
 
-**This is what we agreed to sleep on. Start here.**
+- **Interchange removed.** Vaulta is a payment facilitator, not a card issuer. The 1.5% issuer
+  interchange line (55% of prior revenue) is gone.
+- **Rain card cost added** on the card share of spend: $0.13/transaction at a $48 ticket, plus
+  $0.21/customer/month issuance. Payment contribution = 0.5% fee − Rain cost. QR is now correctly
+  the high-margin rail (nets 0.50% vs 0.23% on card).
+- **AUM options table** on the Model tab; **Option 1** (investment-first fifth segment) and
+  **Option 2** (fee slider) are levers, both off by default.
+- **Opex stress test** at $138 / $254 per customer on the P&L tab.
 
-AUM is only ~3% of revenue and the reason is structural, not a bad assumption:
+**The honest result at the defaults:** Year 10 revenue $258M (was $791M), EBITDA −$122M and never
+positive, EV −$266M, LTV:CAC 1.2x, revenue per customer $60 vs Chime $257.
 
-- Vaulta acquires **wallet** customers who then adopt investing **from zero**. Wealthfront acquires
-  **investment-first** clients who arrive with balances. That difference is the whole gap.
-- A single tenured customer contributing $200/month reaches $27,678 in ten years — past
-  Wealthfront's $26,071 average. But the **book average** is $5,189, because at 98% Series C growth
-  most investors joined recently at a near-zero balance.
-- **Faster growth makes this worse, not better.** Book average falls from $7,783 at 45% growth to
-  $5,271 at 100%. Growth and maturity pull in opposite directions.
-- So AUM matures *beyond* the ten-year horizon on the current acquisition motion.
+---
 
-**Options worth modelling next time** (none decided):
+## Decisions the owner needs to make — these are not modelling gaps
 
-1. **A fifth, investment-first segment** — acquired specifically for tokenized investing, arriving
-   with an opening balance, higher CAC ($200–400, the robo benchmark), much lower churn (Wealthfront
-   is 0.43%/month), and Wealthfront-like balances. This is the direct fix.
-2. **Raise the AUM fee.** At 0.25% Vaulta charges Betterment's price to customers who cannot access
-   Betterment. The growth-adjusted parity fee against the wallet sleeve is 0.84%. At 1.0% the AUM
-   line roughly quadruples with no behavioural assumption.
-3. **Extend the horizon to 15 years** so the book has time to mature, and show the AUM share rising.
-4. **Accept it** — treat AUM as a retention and positioning asset rather than a revenue line, and
-   lead with the deposit spread plus interchange, which is what Chime and Wealthfront actually do.
+Every one of these is a lever already in the model. The next session should start by getting an
+answer to each, not by building anything.
 
-## Also open
+| # | Question | Default | What the model says |
+|---|---|---|---|
+| 1 | **Consumer sleeve** | 20% (consumer earns 3.84%) | EV positive at 50% (consumer earns 2.40%), or 30% + all-QR |
+| 2 | **QR share of spend** | 10% | Every 10 pts of QR ≈ +$15M EV; 100% QR → EV −$135M |
+| 3 | **AUM fee** | 0.25% | 1.0% is the only lever that makes AUM matter: 9% → 29% of revenue |
+| 4 | **Investment-first segment** | Off | Loses money at robo CAC ($300) and $5,000 opening — 0.36x |
+| 5 | **Investing adoption** | ~57% blended | Probably high; no neobank discloses anything near it |
+| 6 | **Rain pricing** | $0.13/tx, $5/card | From the brief; confirm against the contract |
 
-- **Is the org too lean?** All-in opex per customer is ~$67 against Chime's $254 and Wealthfront's
-  $138. The 49% Year-10 EBITDA margin follows from that, not from a better business.
-- **Is 57% blended adoption into investing defensible?** Probably high. No neobank discloses a
-  cross-sell rate anywhere near it. Note that adoption does **not** change the per-investor balance —
-  it scales investors and AUM together — so it moves total fee revenue only.
-- **The Durbin dependency.** Interchange at 1.5% requires a sponsor bank under $10bn in assets. It
-  is 55% of revenue. If that exemption ever closes, or if Vaulta ends up on a Rain-style programme at
-  0.35%, the model changes materially.
+Once those are answered, set the defaults to the decided values and re-run. Only then does it make
+sense to look at anything else.
 
-## House rules learned the hard way
+---
 
-- **CAC is per funded customer.** Chime's $109 and Nubank's $7.40 already embed non-funding signups.
-  Do not divide by a funding rate again.
-- **Spend is a flow, balance is a stock.** Spend above 100% of balance per month is turnover, not
-  drawdown, and is correct for a transaction account.
-- **Revenue lines use average balances; stock-versus-stock ratios use period-end.** Mixing them
-  flatters the ratio.
-- **Interchange is revenue, not a cost** — Vaulta issues the card.
-- Verify any change by extracting the last `<script>` block from `index.html` and running `model()`
-  in Node against a stubbed DOM. It catches arithmetic the browser hides. There are working harness
-  scripts from the last session in the scratchpad pattern described in `SESSION_NOTES.md`.
+## Things worth checking if there is time
+
+- **Card issuance is charged on every customer**, including International (EM) where a Rain card
+  may not be issued. If that is wrong, either scale `i_iss` by card share or add a per-segment flag.
+- **Opening balances enter as gross adds × adoption × opening.** Churned investors' balances leave
+  via the redemption rate, not explicitly. Fine at 6% redemption; revisit if the fifth segment is on.
+- **Year-one churn is 4× mature for every segment**, including investment-first at 0.43%. Wealthfront
+  probably does not see 1.7% first-year monthly churn; consider a per-segment multiplier.
+- **The 15-year horizon (Option 3)** is not implemented. Growth is per stage and Series C runs 7–10;
+  extending it needs a taper, not another four years at 98%.
+
+---
+
+## House rules (do not violate)
+
+- **Interchange is NOT Vaulta revenue.** Vaulta is a payment facilitator, not a card issuer.
+- **One merchant fee rate: 0.5% on all transactions.** Cost varies by rail; revenue rate does not.
+- **QR ≈ zero cost; Rain card ≈ $0.13/transaction.** More QR must always improve the model.
+- **Do not invent a revenue line to recover what interchange was.** Show what the business earns.
+- **CAC is per funded customer.** Do not divide by a funding rate again.
+- **Spend is a flow, balance is a stock.** Spend above 100% of balance per month is turnover.
+- **Revenue lines use average balances; stock-versus-stock ratios use period-end.**
 - No `gh` CLI on this machine. Create repos via `git credential fill` then the GitHub API.
 - Pages caches — append `?v=<sha>` when verifying a deploy.
+- Selects in the sidebar fire `change`, not `input`; both are wired to `render()`.
 
-## Benchmarks to hold the model against
+---
 
-| | Chime | Wealthfront |
-|---|---|---|
-| Revenue / customer | $257 | $261 |
-| Primary line | Interchange 69% | Cash NIM **74%** |
-| AUM fee share | none | 25% |
-| Invested / client | none | $26,071 |
-| CAC | $109 at scale | $200–400 |
-| Churn | M12 retention 28% | 0.43%/mo |
-| Customers | 8.6m (12 yrs) | 1.4m (17 yrs) |
+## Benchmarks (hold every model variant against these)
 
-Neither earns most of its money from its namesake activity. That is the single most useful fact
-found last session and it should anchor any argument about what Vaulta's primary line ought to be.
+| | Chime | Wealthfront | Vaulta (Yr 10 defaults) |
+|---|---|---|---|
+| Revenue / customer | $257 | $261 | $60 |
+| Primary line | Interchange 69% — *it is the issuer* | Cash NIM 74% | Consumer NIM 59% |
+| AUM fee share | none | 25% | 9% |
+| Invested / client | none | $26,071 | $5,189 |
+| CAC | $109 at scale | $200–400 | ~$90 |
+| Churn | M12 retention 28% | 0.43%/mo | 0.7–1.8%/mo |
+| Customers | 8.6M (12 yrs) | 1.4M (17 yrs) | 4.3M (10 yrs) |
+
+Neither Chime nor Wealthfront earns most of its money from its namesake activity. Chime earns
+interchange because it *is* the card issuer through a bank partner. Vaulta is not; its equivalent
+primary line is NIM on the T-bill sleeve.

@@ -1,3 +1,95 @@
+# Session Notes — 14 September 2026
+
+Third build, one correction: the interchange line is gone. Vaulta is a payment facilitator, not a
+card issuer, and the previous session's 1.5% issuer interchange — 55% of revenue — rested on an
+assumption about Vaulta's structure that was wrong. This session removed it, replaced it with the
+Rain card cost it should have been, and built the levers the open questions needed.
+
+Live model: https://moazzamkhoja.github.io/Vaulta-AUM-Model/ · `index.html` is authoritative.
+Harness: `node tools/harness.js [id=value ...]` runs `model()` from the HTML in Node.
+
+---
+
+## What changed
+
+**Removed:** `Card interchange` revenue line and the `i_ic` slider.
+
+**Added, payments:** one merchant fee (0.5%) on all spend; Rain cost per card transaction (`i_rc`,
+$0.13); average card ticket (`i_tx`, $48, sets transactions per dollar); card issuance per customer
+per month (`i_iss`, $0.21). Payment contribution = fee − Rain cost on the (1 − QR) share of spend.
+The sensitivity table is now sleeve × QR share, and a rail-economics table on the Unit Economics tab
+shows one transaction on each rail.
+
+**Added, AUM:** an optional fifth segment, Investment-First (`i_if`, off by default) with an
+`open` column on every segment — the balance a new investor brings on day one. Opening balances
+enter the AUM roll-forward as gross adds × adoption × opening. An "AUM options" table on the Model
+tab re-runs the model for Options 1, 2 and 1+2.
+
+**Added, costs:** opex stress test (`i_ox`): forces all-in opex per customer (fixed + variable +
+marketing) up to $138 or $254, with the Team tab's derived cost as the floor. A comparison table on
+the P&L tab shows all three levels.
+
+Selects fire `change`, not `input`; the document listener now handles both.
+
+## Where it lands — the honest model
+
+Year 10: 4.3m customers, **$258M revenue** (was $791M), EBITDA **−$122M** and never positive within
+ten years, EV **−$266M**, blended LTV:CAC **1.2x**, revenue per customer **$60** against Chime's
+$257 and Wealthfront's $261.
+
+The $533M of lost Year 10 revenue is $443M of interchange Vaulta does not earn and $91M of Rain cost
+on the card rail. No line was invented to recover it.
+
+Revenue mix Year 10: consumer NIM 59%, payment contribution 28%, AUM 9%, merchant float 3%.
+
+## Findings
+
+**QR is the high-margin rail, and the earlier finding was backwards.** At $48 the merchant pays
+$0.24 on either rail; QR costs Solana's $0.00025 and nets $0.24, the Rain card costs $0.13 and nets
+$0.11. The card rail breaks even at a $26 ticket. EV moves from −$266M at 10% QR to −$135M at 100%.
+The previous session's "QR is worth less to us" rested entirely on the interchange error.
+
+**Rain cost is 55% of the merchant fee at the default 90% card share.** $91M against $164M in Year
+10. This is the number the card rail has to justify as an acceptance convenience.
+
+**The sleeve is still the dominant lever.** EV turns positive at a 50% sleeve (consumer reward
+falls from 3.84% to 2.40%), or at 30% with all spend on QR. Neither is the default.
+
+**The lean org is a requirement, not an assumption.** All-in opex is $88 per customer in Year 10.
+At Wealthfront's $138 EBITDA is −$339M; at Chime's $254 it is −$841M. The prior session asked
+whether the org was too lean; at $60 of revenue per customer it cannot be anything else.
+
+**Option 1 (investment-first segment) does not pay at robo CAC.** $5,000 opening × 0.25% is
+$2.20/month against a $300 CAC — 0.36x LTV:CAC; 1.04x at a 1.0% fee. Switching it on makes EV
+worse (−$331M). Wealthfront's motion works because 74% of its revenue is cash NIM on balances it
+did not acquire for investing. Defaults for the segment are a first guess — edit on the Customers
+tab.
+
+**Option 2 (fee to 1.0%) is the only AUM lever that moves the line on its own.** AUM revenue
+$24M → $94M, share 9% → 29%, EV −$266M → −$152M. It is a pricing decision, not a modelling one.
+
+**CAC does not pay for itself at this revenue rate.** Marketing is the largest cost line in every
+year — $238M in Year 10 against $258M of revenue. Blended $90 CAC against $60 of annual revenue and
+$4.40 of monthly net contribution gives 1.2x.
+
+## Open — for next session
+
+Everything below is a decision for the owner, not a modelling gap:
+
+1. **Sleeve.** 20% is the default and the business is under water at it. The model says 50%, or
+   30% plus QR. What does the consumer reward have to be to win the deposit?
+2. **QR share.** 10% is a placeholder. What does merchant enrolment actually look like by year?
+3. **AUM fee.** 0.25% is Betterment's price to customers who cannot reach Betterment. 1.0% is the
+   only lever that makes AUM matter.
+4. **Investment-first segment.** Off. Defaults are a guess and it loses money at them; either
+   find inputs at which it works or leave it off.
+5. **Adoption.** Blended ~57% into investing is probably high. Edit the adoption column to see
+   20% and 35%.
+6. **Rain's actual pricing.** $0.13 and $5/card are from the brief. Confirm against the contract;
+   EV moves ~$25M per cent of per-transaction cost.
+
+---
+
 # Session Notes — 12 September 2026
 
 Rebuilt the Vaulta AUM model from scratch three times over this session as the business
