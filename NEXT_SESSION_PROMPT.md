@@ -1,4 +1,4 @@
-# Next Session Prompt — Vaulta AUM Model v4
+# Next Session Prompt — Vaulta AUM Model v5
 
 **Copy this whole file into a new Cowork or Claude Code session to continue.**
 
@@ -12,88 +12,82 @@ Live: **https://moazzamkhoja.github.io/Vaulta-AUM-Model/**
 `index.html` is the model and is authoritative — a single file, Chart.js from CDN, no build step.
 `Vaulta_AUM_Model_v1.xlsx` is **stale**; ignore it. **HTML only. No spreadsheets.**
 
-Read `SESSION_NOTES.md` (14 Sept entry at the top) and `README.md` before touching anything.
-
+Read `SESSION_NOTES.md` (newest entry at the top) and `README.md` before touching anything.
 Verify any change with `node tools/harness.js [id=value ...]` — it runs `model()` from the HTML
-against a stubbed DOM. Example: `node tools/harness.js i_cs=0.5 i_qr=0.5`.
+against a stubbed DOM. Example: `node tools/harness.js i_vm=0.01 i_qr=0.5 i_cac=75`.
 
 ---
 
-## What was done last session (14 Sept 2026)
+## The model is now deliberately simple — keep it that way
 
-- **Interchange removed.** Vaulta is a payment facilitator, not a card issuer. The 1.5% issuer
-  interchange line (55% of prior revenue) is gone.
-- **Rain card cost added** on the card share of spend: $0.13/transaction at a $48 ticket, plus
-  $0.21/customer/month issuance. Payment contribution = 0.5% fee − Rain cost. QR is now correctly
-  the high-margin rail (nets 0.50% vs 0.23% on card).
-- **AUM options table** on the Model tab; **Option 1** (investment-first fifth segment) and
-  **Option 2** (fee slider) are levers, both off by default.
-- **Opex stress test** at $138 / $254 per customer on the P&L tab.
+**Four levers on the front:**
 
-**The honest result at the defaults:** Year 10 revenue $258M (was $791M), EBITDA −$122M and never
-positive, EV −$266M, LTV:CAC 1.2x, revenue per customer $60 vs Chime $257.
+| id | Lever | Default |
+|---|---|---|
+| `i_vm` | Merchant fee, all rails | 0.75% |
+| `i_qr` | QR share of spend | 10% |
+| `i_cac` | CAC per funded customer (one number) | $100 |
+| `i_cn` | Customers in Year 10 (one number) | 4.3M |
 
----
+CAC and customers are shaped on the **Customers** tab: a CAC multiplier % and a Yr-10 mix % per
+segment. Growth by stage sets the shape of the ramp; the Yr-10 lever and mix set the level.
 
-## Decisions the owner needs to make — these are not modelling gaps
+**Everything else is a fixed assumption** on the **Assumptions** tab (`ASSUME` array in the code;
+`A(id)` reads it unit-aware). Editable there, but **do not promote anything to a slider** unless the
+owner asks. The last two sessions went the other way and the owner asked for it to be undone.
 
-Every one of these is a lever already in the model. The next session should start by getting an
-answer to each, not by building anything.
-
-| # | Question | Default | What the model says |
-|---|---|---|---|
-| 1 | **Consumer sleeve** | 20% (consumer earns 3.84%) | EV positive at 50% (consumer earns 2.40%), or 30% + all-QR |
-| 2 | **QR share of spend** | 10% | Every 10 pts of QR ≈ +$15M EV; 100% QR → EV −$135M |
-| 3 | **AUM fee** | 0.25% | 1.0% is the only lever that makes AUM matter: 9% → 29% of revenue |
-| 4 | **Investment-first segment** | Off | Loses money at robo CAC ($300) and $5,000 opening — 0.36x |
-| 5 | **Investing adoption** | ~57% blended | Probably high; no neobank discloses anything near it |
-| 6 | **Rain pricing** | $0.13/tx, $5/card | From the brief; confirm against the contract |
-
-Once those are answered, set the defaults to the decided values and re-run. Only then does it make
-sense to look at anything else.
+**Costs are derived, not set:** card transactions = spend × (1 − QR) ÷ $48 ticket; Rain cost =
+transactions × $0.13 + $0.21/customer/month issuance; QR cost = transactions × $0.00025.
 
 ---
 
-## Things worth checking if there is time
+## At the defaults
 
-- **Card issuance is charged on every customer**, including International (EM) where a Rain card
-  may not be issued. If that is wrong, either scale `i_iss` by card share or add a per-segment flag.
-- **Opening balances enter as gross adds × adoption × opening.** Churned investors' balances leave
-  via the redemption rate, not explicitly. Fine at 6% redemption; revisit if the fifth segment is on.
-- **Year-one churn is 4× mature for every segment**, including investment-first at 0.43%. Wealthfront
-  probably does not see 1.7% first-year monthly churn; consider a per-segment multiplier.
-- **The 15-year horizon (Option 3)** is not implemented. Growth is per stage and Series C runs 7–10;
-  extending it needs a taper, not another four years at 98%.
+Year 10: $339M revenue (NIM 45% / payments 45% / AUM 7%), EBITDA −$44M and never positive,
+EV −$129M, LTV:CAC 1.7x, $79 revenue per customer vs Chime's $257.
+
+**What crosses zero:** fee 1.0% (at 10% QR) · CAC ~$70 · fee 0.75% with 100% QR.
+**What doesn't:** the customer count. 2M → −$136M, 8.6M → −$115M. Scale is not the story.
+
+---
+
+## Next session agenda
+
+1. **Get the owner's numbers for the four levers** and set them as defaults. That is the whole
+   agenda. Fee and QR are decisions; CAC and scale are beliefs.
+2. If they want it, a **one-line "what you'd need to believe" readout** on the Model tab: the fee at
+   which EV = 0 given the other three levers, and the CAC at which EV = 0. Both are a bisection over
+   `model()`; cheap to add, and it answers the question the sensitivity table makes them read off.
+3. Only if a fixed assumption is known to be wrong, change it on the Assumptions tab and note why
+   in `SESSION_NOTES.md`.
+
+Things removed in this pass that are recoverable from commit `4b0dc97` if ever wanted: the
+investment-first fifth segment, the AUM options table, the opex stress test.
 
 ---
 
 ## House rules (do not violate)
 
 - **Interchange is NOT Vaulta revenue.** Vaulta is a payment facilitator, not a card issuer.
-- **One merchant fee rate: 0.5% on all transactions.** Cost varies by rail; revenue rate does not.
-- **QR ≈ zero cost; Rain card ≈ $0.13/transaction.** More QR must always improve the model.
-- **Do not invent a revenue line to recover what interchange was.** Show what the business earns.
+- **One merchant fee rate on all transactions.** Cost varies by rail; revenue rate does not.
+- **More QR must always improve the model.**
+- **Four levers on the front, assumptions on the back.** Do not add sliders.
+- **Do not invent a revenue line to recover what interchange was.**
 - **CAC is per funded customer.** Do not divide by a funding rate again.
 - **Spend is a flow, balance is a stock.** Spend above 100% of balance per month is turnover.
 - **Revenue lines use average balances; stock-versus-stock ratios use period-end.**
-- No `gh` CLI on this machine. Create repos via `git credential fill` then the GitHub API.
-- Pages caches — append `?v=<sha>` when verifying a deploy.
-- Selects in the sidebar fire `change`, not `input`; both are wired to `render()`.
+- Bash heredocs containing `'` break in this shell — write patch scripts with the Write tool.
+- No `gh` CLI on this machine. Pages caches — append `?v=<sha>` when verifying a deploy.
+- Preview server: `aum-model` entry in `C:\Users\zdd251\.claude\launch.json` (python http.server :4322).
 
 ---
 
-## Benchmarks (hold every model variant against these)
+## Benchmarks
 
 | | Chime | Wealthfront | Vaulta (Yr 10 defaults) |
 |---|---|---|---|
-| Revenue / customer | $257 | $261 | $60 |
-| Primary line | Interchange 69% — *it is the issuer* | Cash NIM 74% | Consumer NIM 59% |
-| AUM fee share | none | 25% | 9% |
-| Invested / client | none | $26,071 | $5,189 |
-| CAC | $109 at scale | $200–400 | ~$90 |
-| Churn | M12 retention 28% | 0.43%/mo | 0.7–1.8%/mo |
+| Revenue / customer | $257 | $261 | $79 |
+| Primary line | Interchange 69% — *it is the issuer* | Cash NIM 74% | NIM 45% / payments 45% |
+| AUM fee share | none | 25% | 7% |
+| CAC | $109 at scale | $200–400 | $93 blended |
 | Customers | 8.6M (12 yrs) | 1.4M (17 yrs) | 4.3M (10 yrs) |
-
-Neither Chime nor Wealthfront earns most of its money from its namesake activity. Chime earns
-interchange because it *is* the card issuer through a bank partner. Vaulta is not; its equivalent
-primary line is NIM on the T-bill sleeve.

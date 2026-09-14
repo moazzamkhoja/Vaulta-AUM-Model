@@ -1,3 +1,65 @@
+# Session Notes — 14 September 2026 (second pass) — simplified to four levers
+
+The model had grown to seventeen sliders, two selects, a five-segment grid and three option tables.
+The owner asked for two levers: fee and QR share, with every cost derived from them and the customer
+base. Then added two more the same way — CAC as one number shaped by per-segment multipliers, and
+customers as one number shaped by a per-segment mix — and asked for unit economics by segment up front.
+
+## What the model is now
+
+**Four sliders on the front:** merchant fee (0.75%), QR share of spend (10%), CAC per funded
+customer ($100), customers in Year 10 (4.3M). **Everything else is a fixed assumption** on the
+Assumptions tab — T-bill, sleeves, Rain's $0.13/tx and $48 ticket, issuance, AUM fee, return,
+redemption, variable cost, discount rate, exit multiple, survival — editable there, not levers.
+
+**Customers tab** shapes the two "unknown" levers: Yr-10 mix % and CAC multiplier % per segment
+(replacing CAC $, seed and entry columns), plus balance, spend, adoption, contribution, churn.
+Growth by stage sets the *shape* of each segment's ramp; each ramp is scaled so Year 10 = total ×
+mix. Mix is normalised if it does not sum to 100% and the tab says so.
+
+**Model tab, upfront:** LTV vs CAC by segment chart and a unit-economics-by-segment table (mix,
+CAC, revenue, net contribution, LTV, LTV:CAC, payback), before the P&L charts. The one sensitivity
+is fee × QR share.
+
+**Removed:** the investment-first fifth segment, the AUM options table, the opex stress test, the
+sleeve × QR sensitivity, the AUM chart. All recoverable from commit 4b0dc97 if wanted.
+
+**Code:** `ASSUME` array drives the Assumptions grid; `A(id)` reads an assumption unit-aware
+(`%` inputs shown as percentages, read as decimals). Solana's $0.00025 is now charged on QR
+transactions too (`QRCOST`), so both rails carry a cost.
+
+## Where it lands at the defaults
+
+Year 10: 4.3M customers, revenue **$339M** (NIM 45% / payment contribution 45% / AUM 7%),
+EBITDA **−$44M** and never positive, EV **−$129M**, LTV:CAC **1.7x**, revenue per customer **$79**.
+
+## Findings
+
+**The fee lever crosses zero at 1.0%.** EV at 10% QR: 0.50% → −$262M, 0.75% → −$129M, 1.00% →
++$4M, 1.25% → +$137M. Each 0.25% of fee is worth ~$133M of EV.
+
+**QR is worth ~$36M of EV per 25 points** at 0.75%; all-QR at 0.75% is break-even (+$1M).
+
+**CAC crosses zero near $70.** $50 → +$78M and 3.3x; $75 → −$26M; $100 → −$129M; $150 → −$335M.
+
+**Scale does not rescue it.** 2M customers → −$136M; 8.6M → −$115M. Marketing and support scale
+with the base and fixed cost steps by stage, so the customer lever only moves EV by ~$20M across
+its whole range. Unit economics are the story; the count is not.
+
+**Segment ranking is unchanged:** Crypto Enthusiast 3.4x, Unsatisfied Banked 1.7x, International
+1.4x, Unbanked 0.2x.
+
+## Open — for next session
+
+Nothing to build. Set the four levers to what the owner believes and read the result:
+1. Fee — 0.75% is under water; 1.0% is break-even.
+2. QR share — 10% is a placeholder; what does merchant enrolment look like by year?
+3. CAC — $100 vs Chime's $109; the model needs ~$70 or a higher fee.
+4. Mix — 42% International is doing a lot of work at $60 CAC; is that real?
+Then, only if a fixed assumption is known to be wrong, change it on the Assumptions tab.
+
+---
+
 # Session Notes — 14 September 2026
 
 Third build, one correction: the interchange line is gone. Vaulta is a payment facilitator, not a
